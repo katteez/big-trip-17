@@ -17,9 +17,9 @@ const generateDescription = () => {
 
   const sentencesQuantity = getRandomInteger(1, 5);
 
-  const getSentences = () => sentences[getRandomInteger(0, sentences.length - 1)];
+  const getRandomSentence = () => sentences[getRandomInteger(0, sentences.length - 1)];
 
-  return Array.from({length: sentencesQuantity}, getSentences).join(' ');
+  return Array.from({length: sentencesQuantity}, getRandomSentence).join(' ');
 };
 
 const generateCity = () => {
