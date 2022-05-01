@@ -15,6 +15,17 @@ const humanizePointTimeForAttribute = (date) => dayjs(date).format('YYYY-MM-DDTH
 
 const humanizePointDateTime = (dateFrom) => dayjs(dateFrom).format('DD/MM/YY HH:mm');
 
+const humanizeTripDates = (dateFrom, dateTo) => {
+  const startMonth = dayjs(dateFrom).format('MMM');
+  const endMonth = dayjs(dateTo).format('MMM');
+
+  if (startMonth === endMonth) {
+    return `${dayjs(dateFrom).format('MMM DD')} &nbsp;&mdash;&nbsp; ${dayjs(dateTo).format('DD')}`;
+  }
+
+  return `${dayjs(dateFrom).format('MMM DD')} &nbsp;&mdash;&nbsp; ${dayjs(dateTo).format('MMM DD')}`;
+};
+
 const getDuration = (dateTo, dateFrom) => dayjs(dateTo).diff(dayjs(dateFrom));
 
 const millisecondsPerSecond = 1000;
@@ -61,6 +72,7 @@ export {
   humanizePointTime,
   humanizePointTimeForAttribute,
   humanizePointDateTime,
+  humanizeTripDates,
   getDuration,
   humanizeDuration
 };
