@@ -1,11 +1,9 @@
 import { createElement } from '../render.js';
 import {
-  humanizePointStartDate,
-  humanizePointStartDateForAttribute,
-  humanizePointStartTime,
-  humanizePointStartTimeForAttribute,
-  humanizePointEndTime,
-  humanizePointEndTimeForAttribute,
+  humanizePointDate,
+  humanizePointDateForAttribute,
+  humanizePointTime,
+  humanizePointTimeForAttribute,
   getDuration,
   humanizeDuration
 } from '../utils.js';
@@ -22,27 +20,27 @@ const createPointTemplate = (point) => {
   const { basePrice, dateFrom, dateTo, destination, isFavorite, offers, type } = point;
 
   const startDate = dateFrom !== null
-    ? humanizePointStartDate(dateFrom)
+    ? humanizePointDate(dateFrom)
     : '';
 
   const startDateForAttribute = dateFrom !== null
-    ? humanizePointStartDateForAttribute(dateFrom)
+    ? humanizePointDateForAttribute(dateFrom)
     : '';
 
   const startTime = dateFrom !== null
-    ? humanizePointStartTime(dateFrom)
+    ? humanizePointTime(dateFrom)
     : '';
 
   const startTimeForAttribute = dateFrom !== null
-    ? humanizePointStartTimeForAttribute(dateFrom)
+    ? humanizePointTimeForAttribute(dateFrom)
     : '';
 
   const endTime = dateTo !== null
-    ? humanizePointEndTime(dateTo)
+    ? humanizePointTime(dateTo)
     : '';
 
   const endTimeForAttribute = dateTo !== null
-    ? humanizePointEndTimeForAttribute(dateTo)
+    ? humanizePointTimeForAttribute(dateTo)
     : '';
 
   const duration = dateTo !== null & dateFrom !== null

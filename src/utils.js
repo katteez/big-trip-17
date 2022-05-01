@@ -7,14 +7,13 @@ const getRandomInteger = (a = 0, b = 1) => {
   return Math.floor(lower + Math.random() * (upper - lower + 1));
 };
 
-const humanizePointStartDate = (dateFrom) => dayjs(dateFrom).format('MMM D');
-const humanizePointStartDateForAttribute = (dateFrom) => dayjs(dateFrom).format('YYYY-MM-DD');
+const humanizePointDate = (date) => dayjs(date).format('MMM DD');
+const humanizePointDateForAttribute = (date) => dayjs(date).format('YYYY-MM-DD');
 
-const humanizePointStartTime = (timeFrom) => dayjs(timeFrom).format('HH:mm');
-const humanizePointStartTimeForAttribute = (timeFrom) => dayjs(timeFrom).format('YYYY-MM-DDTHH:mm');
+const humanizePointTime = (date) => dayjs(date).format('HH:mm');
+const humanizePointTimeForAttribute = (date) => dayjs(date).format('YYYY-MM-DDTHH:mm');
 
-const humanizePointEndTime = (timeTo) => dayjs(timeTo).format('HH:mm');
-const humanizePointEndTimeForAttribute = (timeTo) => dayjs(timeTo).format('YYYY-MM-DDTHH:mm');
+const humanizePointDateTime = (dateFrom) => dayjs(dateFrom).format('DD/MM/YY HH:mm');
 
 const getDuration = (dateTo, dateFrom) => dayjs(dateTo).diff(dayjs(dateFrom));
 
@@ -57,12 +56,11 @@ const humanizeDuration = (duration) => {
 
 export {
   getRandomInteger,
-  humanizePointStartDate,
-  humanizePointStartDateForAttribute,
-  humanizePointStartTime,
-  humanizePointStartTimeForAttribute,
-  humanizePointEndTime,
-  humanizePointEndTimeForAttribute,
+  humanizePointDate,
+  humanizePointDateForAttribute,
+  humanizePointTime,
+  humanizePointTimeForAttribute,
+  humanizePointDateTime,
   getDuration,
   humanizeDuration
 };

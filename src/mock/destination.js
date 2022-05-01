@@ -1,4 +1,5 @@
 import { getRandomInteger } from '../utils.js';
+import { DESTINATIONS } from '../const.js';
 
 const generateDescription = () => {
   const sentences = [
@@ -23,11 +24,9 @@ const generateDescription = () => {
 };
 
 const generateCity = () => {
-  const cities = ['Amsterdam', 'Chamonix', 'Geneva', 'Rome', 'Berlin', 'Madrid', 'London', 'Paris'];
+  const randomIndex = getRandomInteger(0, DESTINATIONS.length - 1);
 
-  const randomIndex = getRandomInteger(0, cities.length - 1);
-
-  return cities[randomIndex];
+  return DESTINATIONS[randomIndex];
 };
 
 const generatePictures = () => {

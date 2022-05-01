@@ -1,8 +1,7 @@
 import { getRandomInteger } from '../utils.js';
+import { TYPES } from '../const.js';
 
-export const generateOffers = () => {
-  const types = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
-
+export const generateOffersByAllTypes = () => {
   const offers = [
     {
       'id': 1,
@@ -25,31 +24,43 @@ export const generateOffers = () => {
       'title': 'Rent a car',
       'price': 200
     }, {
-      'id': 5,
+      'id': 6,
       'title': 'Add breakfast',
       'price': 60
     }, {
-      'id': 6,
+      'id': 7,
       'title': 'Book tickets',
       'price': 40
     }, {
-      'id': 7,
+      'id': 8,
       'title': 'Lunch in city',
       'price': 30
+    }, {
+      'id': 9,
+      'title': 'Add meal',
+      'price': 15
+    }, {
+      'id': 10,
+      'title': 'Choose seats',
+      'price': 5
+    }, {
+      'id': 11,
+      'title': 'Travel by train',
+      'price': 40
     },
   ];
 
-  const offersByType = [];
+  const offersByAllTypes = [];
 
-  for (const type of types) {
+  for (const type of TYPES) {
     const areOffers = Boolean(getRandomInteger(0, 1));
     const randomOffers = [];
 
     if (areOffers) {
-      const offersQuantity = getRandomInteger(1, 3);
+      const randomOffersQuantity = getRandomInteger(1, 5);
 
       // Получаем массив с неповторяющимися доп. опциями
-      while (randomOffers.length < offersQuantity) {
+      while (randomOffers.length < randomOffersQuantity) {
         const randomOffer = offers[getRandomInteger(0, offers.length - 1)];
 
         if (randomOffers.indexOf(randomOffer) === -1) {
@@ -58,13 +69,13 @@ export const generateOffers = () => {
       }
     }
 
-    const offerByType = {
+    const offersByOneType = {
       type,
       offers: randomOffers,
     };
 
-    offersByType.push(offerByType);
+    offersByAllTypes.push(offersByOneType);
   }
 
-  return offersByType;
+  return offersByAllTypes;
 };

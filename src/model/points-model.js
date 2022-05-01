@@ -1,11 +1,12 @@
 import { generatePoint } from '../mock/point.js';
 
 export default class PointsModel {
-  points = Array.from({length: 3}, generatePoint);
+  constructor(offers) {
+    this.offers = offers;
+  }
 
-  getPoints = () => {
-    this.points.sort((a, b) => a.dateFrom - b.dateFrom); // сортируем в порядке возрастания даты начала
+  // Получаем точки и сортируем их в порядке возрастания даты начала
+  points = () => Array.from({length: 3}, () => generatePoint(this.offers)).sort((a, b) => a.dateFrom - b.dateFrom);
 
-    return this.points;
-  };
+  getPoints = () => this.points();
 }

@@ -1,7 +1,7 @@
 import { getRandomInteger } from '../utils.js';
 import dayjs from 'dayjs';
+import { TYPES } from '../const.js';
 import { generateDestination } from './destination.js';
-import { generateOffers } from './offers.js';
 
 const generatePrice = () => getRandomInteger(10, 1500);
 
@@ -31,27 +31,36 @@ const generateDateTo = () => {
 };
 
 const generateType = () => {
-  const types = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
+  const randomIndex = getRandomInteger(0, TYPES.length - 1);
 
-  const randomIndex = getRandomInteger(0, types.length - 1);
-
-  return types[randomIndex];
+  return TYPES[randomIndex];
 };
 
 let type = null;
 
-// Получаем только те доп. опции, которые подходят под тип точки маршрута
-const generateOffersByType = () => {
-  const offersByAllTypes = generateOffers();
+const generateOffersByType = (offersByAllTypes) => {
+  const randomOffers = [];
+  const randomOffersQuantity = getRandomInteger(1, 3);
 
   for (const offersByOneType of offersByAllTypes) {
-    if (offersByOneType.type === type) {
-      return offersByOneType.offers;
+    // Получаем только те доп. опции, которые подходят под тип текущей точки маршрута
+    if (offersByOneType.type === type && offersByOneType.offers && offersByOneType.offers.length) {
+
+      // Получаем массив с неповторяющимися доп. опциями
+      while (randomOffers.length < randomOffersQuantity) {
+        const randomOffer = offersByOneType.offers[getRandomInteger(0, offersByOneType.offers.length - 1)];
+
+        if (randomOffers.indexOf(randomOffer) === -1) {
+          randomOffers.push(randomOffer);
+        }
+      }
     }
   }
+
+  return randomOffers;
 };
 
-export const generatePoint = () => {
+export const generatePoint = (offersByAllTypes) => {
   dateFrom = generateDateFrom();
   type = generateType();
 
@@ -62,7 +71,7 @@ export const generatePoint = () => {
     destination: generateDestination(),
     id: '0',
     isFavorite: Boolean(getRandomInteger(0, 1)),
-    offers: generateOffersByType(),
+    offers: generateOffersByType(offersByAllTypes),
     type,
   };
 };
