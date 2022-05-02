@@ -2,6 +2,7 @@ import { createElement } from '../render.js';
 import { TYPES, DESTINATIONS } from '../const.js';
 import { getRandomInteger, humanizePointDateTime } from '../utils.js';
 
+// Тип маршрута в выпадающем списке
 const createPointEditViewEventTypeListTemplate = (currentType) => TYPES.map((type) => (
   `<div class="event__type-item">
     <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type"
@@ -12,22 +13,25 @@ const createPointEditViewEventTypeListTemplate = (currentType) => TYPES.map((typ
   </div>`
 )).join('');
 
+// Пункт назначения в выпадающем списке
 const createPointEditViewDestinationListTemplate = () => DESTINATIONS.map((destination) => (
   `<option value="${destination}"></option>`
 )).join('');
 
+// Кнопка раскрытия/скрытия формы редактирования
 const createPointEditViewRollupButtonTemplate = (point) => point ? (
   `<button class="event__rollup-btn" type="button">
     <span class="visually-hidden">Open event</span>
   </button>`
 ) : '';
 
-const createPointEditViewOfferSelectorsTemplate = (offersByCurrentType, checkedOffers) => offersByCurrentType.map((offer) => {
+// Доп. опция
+const createPointEditViewOfferSelectorsTemplate = (offers, selectedOffers) => offers.map((offer) => {
   let checked;
 
   // Ищем выбранные пользователем опции
-  checkedOffers.forEach((checkedOffer) => {
-    checked = checkedOffer.id === offer.id ? 'checked' : '';
+  selectedOffers.forEach((selectedOffer) => {
+    checked = selectedOffer.id === offer.id ? 'checked' : '';
   });
 
   return (
@@ -44,12 +48,10 @@ const createPointEditViewOfferSelectorsTemplate = (offersByCurrentType, checkedO
   );
 }).join('');
 
-const createPointEditViewOffersSectionTemplate = (offersByAllTypes, checkedOffers, currentType) => {
-  // Получаем только те доп. опции, которые подходят под тип текущей точки маршрута
-  const offersByCurrentType = offersByAllTypes.filter((offersByOneType) => offersByOneType.type === currentType)[0].offers;
-
-  if (offersByCurrentType && offersByCurrentType.length) {
-    const offerSelectorsTemplate = createPointEditViewOfferSelectorsTemplate(offersByCurrentType, checkedOffers);
+// Секция с доп. опциями
+const createPointEditViewOffersSectionTemplate = (offers, selectedOffers) => {
+  if (offers && offers.length) {
+    const offerSelectorsTemplate = createPointEditViewOfferSelectorsTemplate(offers, selectedOffers);
 
     return (
       `<section class="event__section  event__section--offers">
@@ -65,6 +67,7 @@ const createPointEditViewOffersSectionTemplate = (offersByAllTypes, checkedOffer
   return '';
 };
 
+// Фотография пункта назначения
 const createPointEditViewEventPhotoTemplate = () => {
   const photosQuantity = 5;
 
@@ -73,6 +76,7 @@ const createPointEditViewEventPhotoTemplate = () => {
   )).join('');
 };
 
+// Контейнер с фотографиями пункта назначения
 const createPointEditViewPhotosContainerTemplate = (pointId) => {
   if(!pointId) {
     const eventPhotoTemplate = createPointEditViewEventPhotoTemplate();
@@ -89,13 +93,13 @@ const createPointEditViewPhotosContainerTemplate = (pointId) => {
   return '';
 };
 
-const createPointEditTemplate = (offersByAllTypes, point) => {
+const createPointEditTemplate = (offers, point) => {
   let basePrice = '',
     dateFrom,
     dateTo,
     destination,
     id = null,
-    offers = [],
+    selectedOffers = [],
     type = TYPES[0];
 
   if (point) {
@@ -104,7 +108,7 @@ const createPointEditTemplate = (offersByAllTypes, point) => {
     dateTo = point.dateTo;
     destination = point.destination;
     id = point.id;
-    offers = point.offers;
+    selectedOffers = point.offers;
     type = point.type;
   }
 
@@ -116,7 +120,7 @@ const createPointEditTemplate = (offersByAllTypes, point) => {
   const eventTypesTemplate = createPointEditViewEventTypeListTemplate(type);
   const destinationsTemplate = createPointEditViewDestinationListTemplate();
   const rollupButtonTemplate = createPointEditViewRollupButtonTemplate(point);
-  const offersSectionTemplate = createPointEditViewOffersSectionTemplate(offersByAllTypes, offers, type);
+  const offersSectionTemplate = createPointEditViewOffersSectionTemplate(offers, selectedOffers);
   const photosContainerTemplate = createPointEditViewPhotosContainerTemplate(id);
 
   return (`<li class="trip-events__item">
