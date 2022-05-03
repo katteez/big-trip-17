@@ -63,18 +63,14 @@ const createPointEditViewOffersSectionTemplate = (offers, selectedOffers) => {
 };
 
 // Фотография пункта назначения
-const createPointEditViewEventPhotoTemplate = () => {
-  const photosQuantity = 5;
-
-  return Array.from({length: photosQuantity}, () => getRandomInteger(0, 1000)).map((photoNumber) => (
-    `<img class="event__photo" src="http://picsum.photos/248/152?r=${photoNumber}" alt="Event photo"></img>`
-  )).join('');
-};
+const createPointEditViewEventPhotoTemplate = (photos) => photos.map((photo) => (
+  `<img class="event__photo" src="http://picsum.photos/248/152?r=${photo.src}" alt="${photo.description}"></img>`
+)).join('');
 
 // Контейнер с фотографиями пункта назначения
-const createPointEditViewPhotosContainerTemplate = (pointId) => {
-  if(!pointId) {
-    const eventPhotoTemplate = createPointEditViewEventPhotoTemplate();
+const createPointEditViewPhotosContainerTemplate = (photos) => {
+  if(photos && photos.length) {
+    const eventPhotoTemplate = createPointEditViewEventPhotoTemplate(photos);
 
     return (
       `<div class="event__photos-container">
@@ -84,15 +80,30 @@ const createPointEditViewPhotosContainerTemplate = (pointId) => {
       </div>`
     );
   }
+};
+
+// // Секция с описанием пункта назначения
+const createPointEditViewDestinationSectionTemplate = (pointId, description, photos) => {
+  if(pointId) {
+    const photosContainerTemplate = createPointEditViewPhotosContainerTemplate(photos);
+
+    return (
+      `<section class="event__section  event__section--destination">
+        <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+        <p class="event__destination-description">${description}</p>
+        ${photosContainerTemplate}
+      </section>`
+    );
+  }
 
   return '';
 };
 
 const createPointEditTemplate = (offers, point) => {
   let basePrice = '',
-    dateFrom,
-    dateTo,
-    destination,
+    dateFrom = null,
+    dateTo = null,
+    destination = null,
     id = null,
     selectedOffers = [],
     type = TYPES[0];
@@ -111,12 +122,13 @@ const createPointEditTemplate = (offers, point) => {
   const endTime = dateTo ? humanizePointDateTime(dateTo) : '';
   const destinationName = destination ? destination.name : '';
   const destinationDescription = destination ? destination.description : '';
+  const destinationPhotos = destination ? [...destination.pictures] : [];
 
   const eventTypesTemplate = createPointEditViewEventTypeListTemplate(type);
   const destinationsTemplate = createPointEditViewDestinationListTemplate();
   const rollupButtonTemplate = createPointEditViewRollupButtonTemplate(point);
   const offersSectionTemplate = createPointEditViewOffersSectionTemplate(offers, selectedOffers);
-  const photosContainerTemplate = createPointEditViewPhotosContainerTemplate(id);
+  const destinationSectionTemplate = createPointEditViewDestinationSectionTemplate(id, destinationDescription, destinationPhotos);
 
   return (`<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -169,11 +181,7 @@ const createPointEditTemplate = (offers, point) => {
       <section class="event__details">
         ${offersSectionTemplate}
 
-        <section class="event__section  event__section--destination">
-          <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-          <p class="event__destination-description">${destinationDescription}</p>
-          ${photosContainerTemplate}
-        </section>
+        ${destinationSectionTemplate}
       </section>
     </form>
   </li>`
