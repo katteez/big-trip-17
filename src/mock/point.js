@@ -38,26 +38,24 @@ const generateType = () => {
 
 let type = null;
 
-const generateOffersByType = (offersByAllTypes) => {
-  const randomOffers = [];
-  const randomOffersQuantity = getRandomInteger(1, 3);
+const generateOfferIds = (offersByAllTypes) => {
+  const randomOfferIds = [];
 
-  for (const offersByOneType of offersByAllTypes) {
-    // Получаем только те доп. опции, которые подходят под тип текущей точки маршрута
-    if (offersByOneType.type === type && offersByOneType.offers && offersByOneType.offers.length) {
+  // Получаем только те доп. опции, которые подходят под тип текущей точки маршрута
+  const offersByPointType = offersByAllTypes.find((offer) => offer.type === type).offers;
 
-      // Получаем массив с неповторяющимися доп. опциями
-      while (randomOffers.length < randomOffersQuantity) {
-        const randomOffer = offersByOneType.offers[getRandomInteger(0, offersByOneType.offers.length - 1)];
+  if (offersByPointType && offersByPointType.length) {
+    for (const offer of offersByPointType) {
+      const isNecessaryToAdd = Boolean(getRandomInteger(0, 1));
 
-        if (randomOffers.indexOf(randomOffer) === -1) {
-          randomOffers.push(randomOffer);
-        }
+      // Рандомно добавляем id некоторых опций в опции точки маршрута
+      if(isNecessaryToAdd) {
+        randomOfferIds.push(offer.id);
       }
     }
   }
 
-  return randomOffers;
+  return randomOfferIds;
 };
 
 export const generatePoint = (offersByAllTypes) => {
@@ -71,7 +69,7 @@ export const generatePoint = (offersByAllTypes) => {
     destination: generateDestination(),
     id: '0',
     isFavorite: Boolean(getRandomInteger(0, 1)),
-    offers: generateOffersByType(offersByAllTypes),
+    offers: generateOfferIds(offersByAllTypes),
     type,
   };
 };

@@ -18,7 +18,7 @@ const createPointEditViewDestinationListTemplate = () => DESTINATIONS.map((desti
   `<option value="${destination}"></option>`
 )).join('');
 
-// Кнопка раскрытия/скрытия формы редактирования
+// Кнопка открытия/закрытия формы редактирования
 const createPointEditViewRollupButtonTemplate = (point) => point ? (
   `<button class="event__rollup-btn" type="button">
     <span class="visually-hidden">Open event</span>
@@ -27,12 +27,7 @@ const createPointEditViewRollupButtonTemplate = (point) => point ? (
 
 // Доп. опция
 const createPointEditViewOfferSelectorsTemplate = (offers, selectedOffers) => offers.map((offer) => {
-  let checked;
-
-  // Ищем выбранные пользователем опции
-  selectedOffers.forEach((selectedOffer) => {
-    checked = selectedOffer.id === offer.id ? 'checked' : '';
-  });
+  const checked = selectedOffers.includes(offer.id) ? 'checked' : '';
 
   return (
     `<div class="event__offer-selector">
