@@ -1,3 +1,5 @@
+import OffersModel from '../model/offers-model.js';
+import PointsModel from '../model/points-model.js';
 import SortView from '../view/sort-view.js';
 import PointListView from '../view/point-list-view.js';
 import PointEditView from '../view/point-edit-view.js';
@@ -6,15 +8,17 @@ import { render } from '../render.js';
 
 export default class PointsPresenter {
   pointListComponent = new PointListView();
+  offersModel = new OffersModel();
+  offers = [...this.offersModel.getOffers()];
+  pointsModel = new PointsModel(this.offers);
+  points = [...this.pointsModel.getPoints()];
+  point = this.points[0]; // временно работаем только с первой точкой маршрута из массива точек
 
-  init = (pointsContainer, offersByAllTypes, points) => {
+  init = (pointsContainer) => {
     this.pointsContainer = pointsContainer;
-    this.offersByAllTypes = offersByAllTypes;
-    this.points = points;
-    this.point = this.points[0]; // временно работаем только с первой точкой маршрута из массива точек
 
     // Получаем только те доп. опции, которые подходят под тип текущей точки маршрута
-    this.offersByPointType = offersByAllTypes.find((offer) => offer.type === this.point.type).offers;
+    this.offersByPointType = this.offers.find((offer) => offer.type === this.point.type).offers;
 
     render(new SortView(), this.pointsContainer);
     render(this.pointListComponent, this.pointsContainer);
@@ -23,7 +27,7 @@ export default class PointsPresenter {
 
     for(let i = 0; i< this.points.length; i++) {
       // Получаем только те доп. опции, которые подходят под тип текущей точки маршрута
-      const offersByPointType = offersByAllTypes.find((offer) => offer.type === this.points[i].type).offers;
+      const offersByPointType = this.offers.find((offer) => offer.type === this.points[i].type).offers;
 
       render(new PointView(this.points[i], offersByPointType), this.pointListComponent.getElement());
     }
