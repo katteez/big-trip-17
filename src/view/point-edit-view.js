@@ -80,6 +80,8 @@ const createPointEditViewPhotosContainerTemplate = (photos) => {
       </div>`
     );
   }
+
+  return '';
 };
 
 // // Секция с описанием пункта назначения

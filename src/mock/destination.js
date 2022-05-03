@@ -17,18 +17,24 @@ const generateCity = () => {
 
 const generatePictures = () => {
   const picturesQuantity = 5;
+  const arePictures = Boolean(getRandomInteger(0, 1));
 
-  const getRandomPictureSrc = () => `http://picsum.photos/248/152?r=${getRandomInteger(0, 500)}`;
+  if (arePictures) {
+    const getRandomPictureSrc = () => `http://picsum.photos/248/152?r=${getRandomInteger(0, 500)}`;
 
-  // Берем из рандомного предложения первые 20 символов для описания картинки
-  const getRandomDescription = () => SENTENCES[getRandomInteger(0, SENTENCES.length - 1)].slice(0, 20);
+    // Берем из рандомного предложения первые 20 символов для описания картинки
+    const getRandomDescription = () => SENTENCES[getRandomInteger(0, SENTENCES.length - 1)].slice(0, 20);
 
-  const getPicture = () => ({
-    src: getRandomPictureSrc(),
-    description: getRandomDescription(),
-  });
+    const getPicture = () => ({
+      src: getRandomPictureSrc(),
+      description: getRandomDescription(),
+    });
 
-  return Array.from({length: picturesQuantity}, getPicture);
+    return Array.from({length: picturesQuantity}, getPicture);
+  }
+
+  return [];
+
 };
 
 export const generateDestination = () => ({
