@@ -1,7 +1,7 @@
 import { createElement } from '../render.js';
 import { humanizeTripDates } from '../utils.js';
 
-const createTripTemplate = (points) => {
+const createTripTemplate = (points, offers) => {
   const tripDestinations = [];
 
   const startDate = points[0].dateFrom;
@@ -17,7 +17,11 @@ const createTripTemplate = (points) => {
     }
 
     basePriceForAllPoints += point.basePrice;
-    priceForAllPointsOffers += point.offers.reduce((total, offer) => total + offer.price, 0);
+
+    // Получаем только те доп. опции, которые подходят под тип текущей точки маршрута
+    const offersByPointType = offers.find((offer) => offer.type === point.type).offers;
+
+    priceForAllPointsOffers += offersByPointType.reduce((total, offer) => total + offer.price, 0);
   }
 
   const tripTitle = tripDestinations.length <= 3
@@ -42,12 +46,13 @@ const createTripTemplate = (points) => {
 };
 
 export default class TripView {
-  constructor(points) {
+  constructor(points, offers) {
     this.points = points;
+    this.offers = offers;
   }
 
   getTemplate() {
-    return createTripTemplate(this.points);
+    return createTripTemplate(this.points, this.offers);
   }
 
   getElement() {

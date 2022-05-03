@@ -1,5 +1,6 @@
 import OffersModel from '../model/offers-model.js';
 import PointsModel from '../model/points-model.js';
+import TripView from '../view/trip-view.js';
 import SortView from '../view/sort-view.js';
 import PointListView from '../view/point-list-view.js';
 import PointEditView from '../view/point-edit-view.js';
@@ -14,12 +15,13 @@ export default class PointsPresenter {
   points = [...this.pointsModel.getPoints()];
   point = this.points[0]; // временно работаем только с первой точкой маршрута из массива точек
 
-  init = (pointsContainer) => {
+  init = (tripContainer, pointsContainer) => {
     this.pointsContainer = pointsContainer;
 
     // Получаем только те доп. опции, которые подходят под тип текущей точки маршрута
     this.offersByPointType = this.offers.find((offer) => offer.type === this.point.type).offers;
 
+    render(new TripView(this.points, this.offers), tripContainer, 'afterbegin');
     render(new SortView(), this.pointsContainer);
     render(this.pointListComponent, this.pointsContainer);
     render(new PointEditView(this.offersByPointType, this.point), this.pointListComponent.getElement()); // редактирование точки маршрута
