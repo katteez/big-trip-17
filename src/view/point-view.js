@@ -8,16 +8,24 @@ import {
   humanizeDuration
 } from '../utils.js';
 
-const createPointViewOffersTemplate = (offers) => offers.map((offer) => (
-  `<li class="event__offer">
-    <span class="event__offer-title">${offer.title}</span>
-    &plus;&euro;&nbsp;
-    <span class="event__offer-price">${offer.price}</span>
-  </li>`
-)).join('');
+// Точка маршрута
+const createPointViewOffersTemplate = (selectedOfferIds, offers) => selectedOfferIds.map((selectedOfferId) => {
+  // Находим выбранную опцию по ее Id
+  const selectedOffer = offers.find((offer) => offer.id === selectedOfferId);
 
-const createPointTemplate = (point) => {
-  const { basePrice, dateFrom, dateTo, destination, isFavorite, offers, type } = point;
+  return (
+    `<li class="event__offer">
+      <span class="event__offer-title">${selectedOffer.title}</span>
+      &plus;&euro;&nbsp;
+      <span class="event__offer-price">${selectedOffer.price}</span>
+    </li>`
+  );
+}).join('');
+
+const createPointTemplate = (point, offers) => {
+  const { basePrice, dateFrom, dateTo, destination, isFavorite, type } = point;
+
+  const selectedOfferIds = point.offers;
 
   const startDate = dateFrom !== null
     ? humanizePointDate(dateFrom)
@@ -47,7 +55,7 @@ const createPointTemplate = (point) => {
     ? humanizeDuration(getDuration(dateTo, dateFrom))
     : '';
 
-  const offersTemplate = offers && offers.length ? createPointViewOffersTemplate(offers) : '';
+  const offersTemplate = selectedOfferIds && selectedOfferIds.length ? createPointViewOffersTemplate(selectedOfferIds, offers) : '';
 
   return (
     `<li class="trip-events__item">
@@ -87,12 +95,13 @@ const createPointTemplate = (point) => {
 };
 
 export default class PointView {
-  constructor(point) {
+  constructor(point, offers) {
     this.point = point;
+    this.offers = offers;
   }
 
   getTemplate() {
-    return createPointTemplate(this.point);
+    return createPointTemplate(this.point, this.offers);
   }
 
   getElement() {

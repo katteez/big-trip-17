@@ -22,7 +22,7 @@ export default class PointsPresenter {
     render(new PointEditView(this.offersByPointType), this.pointListComponent.getElement()); // добавление новой точки маршрута
 
     for(let i = 0; i< this.points.length; i++) {
-      render(new PointView(this.points[i]), this.pointListComponent.getElement());
+      render(new PointView(this.points[i], this.offersByPointType), this.pointListComponent.getElement());
     }
   };
 }
