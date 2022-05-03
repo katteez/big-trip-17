@@ -11,8 +11,8 @@ export default class PointsPresenter {
     this.pointsContainer = pointsContainer;
     this.offersByAllTypes = offersByAllTypes;
     this.points = points;
-
     this.point = this.points[0]; // временно работаем только с первой точкой маршрута из массива точек
+
     // Получаем только те доп. опции, которые подходят под тип текущей точки маршрута
     this.offersByPointType = offersByAllTypes.find((offer) => offer.type === this.point.type).offers;
 
@@ -22,7 +22,10 @@ export default class PointsPresenter {
     render(new PointEditView(this.offersByPointType), this.pointListComponent.getElement()); // добавление новой точки маршрута
 
     for(let i = 0; i< this.points.length; i++) {
-      render(new PointView(this.points[i], this.offersByPointType), this.pointListComponent.getElement());
+      // Получаем только те доп. опции, которые подходят под тип текущей точки маршрута
+      const offersByPointType = offersByAllTypes.find((offer) => offer.type === this.points[i].type).offers;
+
+      render(new PointView(this.points[i], offersByPointType), this.pointListComponent.getElement());
     }
   };
 }
