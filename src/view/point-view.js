@@ -22,7 +22,7 @@ const createPointViewOffersTemplate = (selectedOfferIds, offers) => selectedOffe
   );
 }).join('');
 
-const createPointTemplate = (point, offers) => {
+const createPointTemplate = (offers, point) => {
   const { basePrice, dateFrom, dateTo, destination, isFavorite, type } = point;
 
   const selectedOfferIds = point.offers;
@@ -99,13 +99,13 @@ export default class PointView {
   #offers = null;
   #element = null;
 
-  constructor(point, offers) {
-    this.#point = point;
+  constructor(offers, point) {
     this.#offers = offers;
+    this.#point = point;
   }
 
   get template() {
-    return createPointTemplate(this.#point, this.#offers);
+    return createPointTemplate(this.#offers, this.#point);
   }
 
   get element() {
