@@ -95,24 +95,28 @@ const createPointTemplate = (point, offers) => {
 };
 
 export default class PointView {
+  #point = null;
+  #offers = null;
+  #element = null;
+
   constructor(point, offers) {
-    this.point = point;
-    this.offers = offers;
+    this.#point = point;
+    this.#offers = offers;
   }
 
-  getTemplate() {
-    return createPointTemplate(this.point, this.offers);
+  get template() {
+    return createPointTemplate(this.#point, this.#offers);
   }
 
-  getElement() {
-    if(!this.element) {
-      this.element = createElement(this.getTemplate());
+  get element() {
+    if(!this.#element) {
+      this.#element = createElement(this.template);
     }
 
-    return this.element;
+    return this.#element;
   }
 
   removeElement() {
-    this.element = null;
+    this.#element = null;
   }
 }

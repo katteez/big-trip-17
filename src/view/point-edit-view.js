@@ -1,6 +1,6 @@
 import { createElement } from '../render.js';
 import { TYPES, DESTINATIONS } from '../const.js';
-import { getRandomInteger, humanizePointDateTime } from '../utils.js';
+import { humanizePointDateTime } from '../utils.js';
 
 // Тип маршрута в выпадающем списке
 const createPointEditViewEventTypeListTemplate = (currentType) => TYPES.map((type) => (
@@ -191,24 +191,28 @@ const createPointEditTemplate = (offers, point) => {
 };
 
 export default class PointEditView {
+  #offers = null;
+  #point = null;
+  #element = null;
+
   constructor(offers, point) {
-    this.offers = offers;
-    this.point = point;
+    this.#offers = offers;
+    this.#point = point;
   }
 
-  getTemplate() {
-    return createPointEditTemplate(this.offers, this.point);
+  get template() {
+    return createPointEditTemplate(this.#offers, this.#point);
   }
 
-  getElement() {
-    if(!this.element) {
-      this.element = createElement(this.getTemplate());
+  get element() {
+    if(!this.#element) {
+      this.#element = createElement(this.template);
     }
 
-    return this.element;
+    return this.#element;
   }
 
   removeElement() {
-    this.element = null;
+    this.#element = null;
   }
 }
