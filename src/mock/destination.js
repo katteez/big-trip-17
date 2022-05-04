@@ -1,24 +1,10 @@
 import { getRandomInteger } from '../utils.js';
-import { DESTINATIONS } from '../const.js';
+import { DESTINATIONS, SENTENCES } from '../const.js';
 
 const generateDescription = () => {
-  const sentences = [
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    'Cras aliquet varius magna, non porta ligula feugiat eget.',
-    'Fusce tristique felis at fermentum pharetra.',
-    'Aliquam id orci ut lectus varius viverra.',
-    'Nullam nunc ex, convallis sed finibus eget, sollicitudin eget ante.',
-    'Phasellus eros mauris, condimentum sed nibh vitae, sodales efficitur ipsum.',
-    'Sed blandit, eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui.',
-    'Sed sed nisi sed augue convallis suscipit in sed felis.',
-    'Aliquam erat volutpat.',
-    'Nunc fermentum tortor ac porta dapibus.',
-    'In rutrum ac purus sit amet tempus.',
-  ];
-
   const sentencesQuantity = getRandomInteger(1, 5);
 
-  const getRandomSentence = () => sentences[getRandomInteger(0, sentences.length - 1)];
+  const getRandomSentence = () => SENTENCES[getRandomInteger(0, SENTENCES.length - 1)];
 
   return Array.from({length: sentencesQuantity}, getRandomSentence).join(' ');
 };
@@ -30,9 +16,25 @@ const generateCity = () => {
 };
 
 const generatePictures = () => {
-  const randomIndex = getRandomInteger(0, 500);
+  const picturesQuantity = 5;
+  const arePictures = Boolean(getRandomInteger(0, 1));
 
-  return `http://picsum.photos/248/152?r=${randomIndex}`;
+  if (arePictures) {
+    const getRandomPictureSrc = () => `http://picsum.photos/248/152?r=${getRandomInteger(0, 500)}`;
+
+    // Берем из рандомного предложения первые 20 символов для описания картинки
+    const getRandomDescription = () => SENTENCES[getRandomInteger(0, SENTENCES.length - 1)].slice(0, 20);
+
+    const getPicture = () => ({
+      src: getRandomPictureSrc(),
+      description: getRandomDescription(),
+    });
+
+    return Array.from({length: picturesQuantity}, getPicture);
+  }
+
+  return [];
+
 };
 
 export const generateDestination = () => ({
