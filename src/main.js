@@ -6,8 +6,8 @@ const siteHeaderElement = document.querySelector('.page-header .trip-main');
 const siteHeaderControlsElement = siteHeaderElement.querySelector('.trip-controls__filters');
 const siteMainElement = document.querySelector('.page-main .trip-events');
 
-const pointsPresenter = new PointsPresenter();
+const pointsPresenter = new PointsPresenter(siteHeaderElement, siteMainElement);
 
 render(new FilterView(), siteHeaderControlsElement);
 
-pointsPresenter.init(siteHeaderElement, siteMainElement);
+pointsPresenter.init();

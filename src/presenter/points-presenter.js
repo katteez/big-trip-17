@@ -5,6 +5,7 @@ import SortView from '../view/sort-view.js';
 import PointListView from '../view/point-list-view.js';
 import PointEditView from '../view/point-edit-view.js';
 import PointView from '../view/point-view.js';
+import NoPointView from '../view/no-point-view.js';
 import { render } from '../render.js';
 
 export default class PointsPresenter {
@@ -17,23 +18,16 @@ export default class PointsPresenter {
   #tripContainer = null;
   #pointsContainer = null;
 
-  init = (tripContainer, pointsContainer) => {
+  constructor(tripContainer, pointsContainer) {
     this.#tripContainer = tripContainer;
     this.#pointsContainer = pointsContainer;
+  }
 
-    render(new TripView(this.#points, this.#offers), this.#tripContainer, 'afterbegin');
-    render(new SortView(), this.#pointsContainer);
-    render(this.#pointListComponent, this.#pointsContainer);
-
-    for(let i = 0; i< this.#points.length; i++) {
-      // Получаем только те доп. опции, которые подходят под тип текущей точки маршрута
-      const offersByPointType = this.#offers.find((offer) => offer.type === this.#points[i].type).offers;
-
-      this.#renderPoints(offersByPointType, this.#points[i]);
-    }
+  init = () => {
+    this.#renderPage();
   };
 
-  #renderPoints = (offersByPointType, point) => {
+  #renderPoint = (offersByPointType, point) => {
     const pointComponent = new PointView(offersByPointType, point);
     const pointEditComponent = new PointEditView(offersByPointType, point);
 
@@ -75,5 +69,24 @@ export default class PointsPresenter {
     });
 
     render(pointComponent, this.#pointListComponent.element);
+  };
+
+  #renderPage = () => {
+    render(this.#pointListComponent, this.#pointsContainer);
+
+    if (this.#points.length === 0) {
+      render(new NoPointView(), this.#pointListComponent.element);
+      return;
+    }
+
+    render(new TripView(this.#points, this.#offers), this.#tripContainer, 'afterbegin');
+    render(new SortView(), this.#pointListComponent.element, 'beforebegin');
+
+    for(let i = 0; i< this.#points.length; i++) {
+      // Получаем только те доп. опции, которые подходят под тип текущей точки маршрута
+      const offersByPointType = this.#offers.find((offer) => offer.type === this.#points[i].type).offers;
+
+      this.#renderPoint(offersByPointType, this.#points[i]);
+    }
   };
 }
