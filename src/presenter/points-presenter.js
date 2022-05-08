@@ -1,4 +1,4 @@
-import { render } from '../framework/render.js';
+import { render, replace } from '../framework/render.js';
 import OffersModel from '../model/offers-model.js';
 import PointsModel from '../model/points-model.js';
 import TripView from '../view/trip-view.js';
@@ -33,12 +33,12 @@ export default class PointsPresenter {
 
     // Открываем форму редактирования
     const replacePointToForm = () => {
-      this.#pointListComponent.element.replaceChild(pointEditComponent.element, pointComponent.element);
+      replace(pointEditComponent, pointComponent);
     };
 
     // Закрываем форму редактирования
     const replaceFormToPoint = () => {
-      this.#pointListComponent.element.replaceChild(pointComponent.element, pointEditComponent.element);
+      replace(pointComponent, pointEditComponent);
     };
 
     const onEscKeyDown = (evt) => {

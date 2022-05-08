@@ -1,6 +1,6 @@
 import AbstractView from '../framework/view/abstract-view.js';
 import { TYPES, DESTINATIONS } from '../const.js';
-import { humanizePointDateTime } from '../utils.js';
+import { humanizePointDateTime } from '../utils/point.js';
 
 const BLANK_POINT = {
   basePrice: '',
@@ -122,8 +122,8 @@ const createPointEditTemplate = (offers, point) => {
     type,
   } = point;
 
-  const startTime = dateFrom ? humanizePointDateTime(dateFrom) : '';
-  const endTime = dateTo ? humanizePointDateTime(dateTo) : '';
+  const startTime = humanizePointDateTime(dateFrom);
+  const endTime = humanizePointDateTime(dateTo);
   const destinationName = destination ? destination.name : '';
   const destinationDescription = destination ? destination.description : '';
   const destinationPhotos = destination ? [...destination.pictures] : [];

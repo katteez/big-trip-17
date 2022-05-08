@@ -6,7 +6,7 @@ import {
   humanizePointTimeForAttribute,
   getDuration,
   humanizeDuration
-} from '../utils.js';
+} from '../utils/point.js';
 
 // Точка маршрута
 const createPointViewOffersTemplate = (selectedOfferIds, offers) => selectedOfferIds.map((selectedOfferId) => {
@@ -27,33 +27,19 @@ const createPointTemplate = (offers, point) => {
 
   const selectedOfferIds = point.offers;
 
-  const startDate = dateFrom !== null
-    ? humanizePointDate(dateFrom)
-    : '';
+  const startDate = humanizePointDate(dateFrom);
 
-  const startDateForAttribute = dateFrom !== null
-    ? humanizePointDateForAttribute(dateFrom)
-    : '';
+  const startDateForAttribute = humanizePointDateForAttribute(dateFrom);
 
-  const startTime = dateFrom !== null
-    ? humanizePointTime(dateFrom)
-    : '';
+  const startTime = humanizePointTime(dateFrom);
 
-  const startTimeForAttribute = dateFrom !== null
-    ? humanizePointTimeForAttribute(dateFrom)
-    : '';
+  const startTimeForAttribute = humanizePointTimeForAttribute(dateFrom);
 
-  const endTime = dateTo !== null
-    ? humanizePointTime(dateTo)
-    : '';
+  const endTime = humanizePointTime(dateTo);
 
-  const endTimeForAttribute = dateTo !== null
-    ? humanizePointTimeForAttribute(dateTo)
-    : '';
+  const endTimeForAttribute = humanizePointTimeForAttribute(dateTo);
 
-  const duration = dateTo !== null & dateFrom !== null
-    ? humanizeDuration(getDuration(dateTo, dateFrom))
-    : '';
+  const duration = humanizeDuration(getDuration(dateTo, dateFrom));
 
   const offersTemplate = selectedOfferIds && selectedOfferIds.length ? createPointViewOffersTemplate(selectedOfferIds, offers) : '';
 

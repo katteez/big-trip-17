@@ -1,5 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import { humanizeTripDates } from '../utils.js';
+import { humanizeTripDates } from '../utils/trip.js';
 
 const createTripTemplate = (points, offers) => {
   const tripDestinations = [];
