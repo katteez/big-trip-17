@@ -1,3 +1,4 @@
+import { render, replace } from '../framework/render.js';
 import OffersModel from '../model/offers-model.js';
 import PointsModel from '../model/points-model.js';
 import TripView from '../view/trip-view.js';
@@ -6,7 +7,6 @@ import PointListView from '../view/point-list-view.js';
 import PointEditView from '../view/point-edit-view.js';
 import PointView from '../view/point-view.js';
 import NoPointView from '../view/no-point-view.js';
-import { render } from '../render.js';
 
 export default class PointsPresenter {
   #pointListComponent = new PointListView();
@@ -33,12 +33,12 @@ export default class PointsPresenter {
 
     // Открываем форму редактирования
     const replacePointToForm = () => {
-      this.#pointListComponent.element.replaceChild(pointEditComponent.element, pointComponent.element);
+      replace(pointEditComponent, pointComponent);
     };
 
     // Закрываем форму редактирования
     const replaceFormToPoint = () => {
-      this.#pointListComponent.element.replaceChild(pointComponent.element, pointEditComponent.element);
+      replace(pointComponent, pointEditComponent);
     };
 
     const onEscKeyDown = (evt) => {
@@ -50,20 +50,19 @@ export default class PointsPresenter {
     };
 
     // Обработчик для открытия формы редактирования
-    pointComponent.element.querySelector('.event__rollup-btn').addEventListener('click', () => {
+    pointComponent.setEditClickHandler(() => {
       replacePointToForm();
       document.addEventListener('keydown', onEscKeyDown);
     });
 
     // Обработчик для закрытия формы редактирования
-    pointEditComponent.element.querySelector('.event__rollup-btn').addEventListener('click', () => {
+    pointEditComponent.setClickHandler(() => {
       replaceFormToPoint();
       document.removeEventListener('keydown', onEscKeyDown);
     });
 
-    // Отправка отредактированных данных
-    pointEditComponent.element.querySelector('form').addEventListener('submit', (evt) => {
-      evt.preventDefault();
+    // Обработчик для отправки отредактированных данных
+    pointEditComponent.setFormSubmitHandler(() => {
       replaceFormToPoint();
       document.removeEventListener('keydown', onEscKeyDown);
     });

@@ -1,5 +1,5 @@
-import { createElement } from '../render.js';
-import { humanizeTripDates } from '../utils.js';
+import AbstractView from '../framework/view/abstract-view.js';
+import { humanizeTripDates } from '../utils/trip.js';
 
 const createTripTemplate = (points, offers) => {
   const tripDestinations = [];
@@ -45,29 +45,17 @@ const createTripTemplate = (points, offers) => {
   );
 };
 
-export default class TripView {
+export default class TripView extends AbstractView {
   #points = null;
   #offers = null;
-  #element = null;
 
   constructor(points, offers) {
+    super();
     this.#points = points;
     this.#offers = offers;
   }
 
   get template() {
     return createTripTemplate(this.#points, this.#offers);
-  }
-
-  get element() {
-    if(!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
   }
 }

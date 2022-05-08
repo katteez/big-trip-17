@@ -1,4 +1,4 @@
-import { createElement } from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 import {
   humanizePointDate,
   humanizePointDateForAttribute,
@@ -6,7 +6,7 @@ import {
   humanizePointTimeForAttribute,
   getDuration,
   humanizeDuration
-} from '../utils.js';
+} from '../utils/point.js';
 
 // Точка маршрута
 const createPointViewOffersTemplate = (selectedOfferIds, offers) => selectedOfferIds.map((selectedOfferId) => {
@@ -27,33 +27,19 @@ const createPointTemplate = (offers, point) => {
 
   const selectedOfferIds = point.offers;
 
-  const startDate = dateFrom !== null
-    ? humanizePointDate(dateFrom)
-    : '';
+  const startDate = humanizePointDate(dateFrom);
 
-  const startDateForAttribute = dateFrom !== null
-    ? humanizePointDateForAttribute(dateFrom)
-    : '';
+  const startDateForAttribute = humanizePointDateForAttribute(dateFrom);
 
-  const startTime = dateFrom !== null
-    ? humanizePointTime(dateFrom)
-    : '';
+  const startTime = humanizePointTime(dateFrom);
 
-  const startTimeForAttribute = dateFrom !== null
-    ? humanizePointTimeForAttribute(dateFrom)
-    : '';
+  const startTimeForAttribute = humanizePointTimeForAttribute(dateFrom);
 
-  const endTime = dateTo !== null
-    ? humanizePointTime(dateTo)
-    : '';
+  const endTime = humanizePointTime(dateTo);
 
-  const endTimeForAttribute = dateTo !== null
-    ? humanizePointTimeForAttribute(dateTo)
-    : '';
+  const endTimeForAttribute = humanizePointTimeForAttribute(dateTo);
 
-  const duration = dateTo !== null & dateFrom !== null
-    ? humanizeDuration(getDuration(dateTo, dateFrom))
-    : '';
+  const duration = humanizeDuration(getDuration(dateTo, dateFrom));
 
   const offersTemplate = selectedOfferIds && selectedOfferIds.length ? createPointViewOffersTemplate(selectedOfferIds, offers) : '';
 
@@ -94,12 +80,12 @@ const createPointTemplate = (offers, point) => {
   );
 };
 
-export default class PointView {
-  #point = null;
+export default class PointView extends AbstractView {
   #offers = null;
-  #element = null;
+  #point = null;
 
   constructor(offers, point) {
+    super();
     this.#offers = offers;
     this.#point = point;
   }
@@ -108,15 +94,8 @@ export default class PointView {
     return createPointTemplate(this.#offers, this.#point);
   }
 
-  get element() {
-    if(!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
-  }
+  setEditClickHandler = (callback) => {
+    this._callback.editClick = callback;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this._callback.editClick);
+  };
 }
