@@ -1,3 +1,4 @@
+import { render } from '../framework/render.js';
 import OffersModel from '../model/offers-model.js';
 import PointsModel from '../model/points-model.js';
 import TripView from '../view/trip-view.js';
@@ -6,7 +7,6 @@ import PointListView from '../view/point-list-view.js';
 import PointEditView from '../view/point-edit-view.js';
 import PointView from '../view/point-view.js';
 import NoPointView from '../view/no-point-view.js';
-import { render } from '../render.js';
 
 export default class PointsPresenter {
   #pointListComponent = new PointListView();

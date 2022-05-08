@@ -1,6 +1,17 @@
-import { createElement } from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 import { TYPES, DESTINATIONS } from '../const.js';
 import { humanizePointDateTime } from '../utils.js';
+
+const BLANK_POINT = {
+  basePrice: '',
+  dateFrom: null,
+  dateTo: null,
+  destination: null,
+  id: null,
+  isFavorite: false,
+  offers: [],
+  type: TYPES[0],
+};
 
 // Тип маршрута в выпадающем списке
 const createPointEditViewEventTypeListTemplate = (currentType) => TYPES.map((type) => (
@@ -102,29 +113,21 @@ const createPointEditViewDestinationSectionTemplate = (pointId, description, pho
 };
 
 const createPointEditTemplate = (offers, point) => {
-  let basePrice = '',
-    dateFrom = null,
-    dateTo = null,
-    destination = null,
-    id = null,
-    selectedOffers = [],
-    type = TYPES[0];
-
-  if (point) {
-    basePrice = point.basePrice;
-    dateFrom = point.dateFrom;
-    dateTo = point.dateTo;
-    destination = point.destination;
-    id = point.id;
-    selectedOffers = point.offers;
-    type = point.type;
-  }
+  const {
+    basePrice,
+    dateFrom,
+    dateTo,
+    destination,
+    id,
+    type,
+  } = point;
 
   const startTime = dateFrom ? humanizePointDateTime(dateFrom) : '';
   const endTime = dateTo ? humanizePointDateTime(dateTo) : '';
   const destinationName = destination ? destination.name : '';
   const destinationDescription = destination ? destination.description : '';
   const destinationPhotos = destination ? [...destination.pictures] : [];
+  const selectedOffers = point.offers;
 
   const eventTypesTemplate = createPointEditViewEventTypeListTemplate(type);
   const destinationsTemplate = createPointEditViewDestinationListTemplate();
@@ -190,29 +193,17 @@ const createPointEditTemplate = (offers, point) => {
   );
 };
 
-export default class PointEditView {
+export default class PointEditView extends AbstractView {
   #offers = null;
   #point = null;
-  #element = null;
 
-  constructor(offers, point) {
+  constructor(offers, point = BLANK_POINT) {
+    super();
     this.#offers = offers;
     this.#point = point;
   }
 
   get template() {
     return createPointEditTemplate(this.#offers, this.#point);
-  }
-
-  get element() {
-    if(!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
   }
 }

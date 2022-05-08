@@ -1,4 +1,4 @@
-import { createElement } from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 import {
   humanizePointDate,
   humanizePointDateForAttribute,
@@ -94,29 +94,17 @@ const createPointTemplate = (offers, point) => {
   );
 };
 
-export default class PointView {
-  #point = null;
+export default class PointView extends AbstractView {
   #offers = null;
-  #element = null;
+  #point = null;
 
   constructor(offers, point) {
+    super();
     this.#offers = offers;
     this.#point = point;
   }
 
   get template() {
     return createPointTemplate(this.#offers, this.#point);
-  }
-
-  get element() {
-    if(!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
   }
 }
