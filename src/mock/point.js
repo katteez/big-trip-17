@@ -11,7 +11,7 @@ const maxMinutesGap = 59;
 const generateDateFrom = () => {
   const maxDaysGap = 30;
 
-  const daysGap = getRandomInteger(0, maxDaysGap);
+  const daysGap = getRandomInteger(-maxDaysGap, maxDaysGap);
   const hoursGap = getRandomInteger(0, maxHoursGap);
   const minutesGap = getRandomInteger(0, maxMinutesGap);
 

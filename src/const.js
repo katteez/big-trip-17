@@ -16,4 +16,10 @@ const SENTENCES = [
   'In rutrum ac purus sit amet tempus.',
 ];
 
-export { TYPES, DESTINATIONS, SENTENCES };
+const FilterType = {
+  EVERYTHING: 'everything',
+  FUTURE: 'future',
+  PAST: 'past',
+};
+
+export { TYPES, DESTINATIONS, SENTENCES, FilterType };
