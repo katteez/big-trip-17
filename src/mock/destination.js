@@ -34,7 +34,6 @@ const generatePictures = () => {
   }
 
   return [];
-
 };
 
 export const generateDestination = () => ({
