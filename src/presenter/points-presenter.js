@@ -5,6 +5,7 @@ import PointListView from '../view/point-list-view.js';
 import PointEditView from '../view/point-edit-view.js';
 import PointView from '../view/point-view.js';
 import NoPointView from '../view/no-point-view.js';
+import { FilterType, TextForNoPointView } from '../const.js';
 
 export default class PointsPresenter {
   #pointListComponent = new PointListView();
@@ -72,7 +73,7 @@ export default class PointsPresenter {
     render(this.#pointListComponent, this.#pointsContainer);
 
     if (!this.#points.length) {
-      render(new NoPointView(), this.#pointListComponent.element);
+      render(new NoPointView(TextForNoPointView[FilterType.EVERYTHING]), this.#pointListComponent.element);
       return;
     }
 
