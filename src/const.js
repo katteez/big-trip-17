@@ -16,4 +16,22 @@ const SENTENCES = [
   'In rutrum ac purus sit amet tempus.',
 ];
 
-export { TYPES, DESTINATIONS, SENTENCES };
+const FilterType = {
+  EVERYTHING: 'everything',
+  FUTURE: 'future',
+  PAST: 'past',
+};
+
+const TextForNoPointView = {
+  [FilterType.EVERYTHING]: 'Click New Event to create your first point',
+  [FilterType.FUTURE]: 'There are no future events now',
+  [FilterType.PAST]: 'There are no past events now',
+};
+
+const SortType = {
+  DAY: 'day',
+  TIME: 'time',
+  PRICE: 'price',
+};
+
+export { TYPES, DESTINATIONS, SENTENCES, FilterType, TextForNoPointView, SortType };

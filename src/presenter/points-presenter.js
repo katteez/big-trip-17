@@ -1,26 +1,25 @@
 import { render, replace } from '../framework/render.js';
-import OffersModel from '../model/offers-model.js';
-import PointsModel from '../model/points-model.js';
 import TripView from '../view/trip-view.js';
 import SortView from '../view/sort-view.js';
 import PointListView from '../view/point-list-view.js';
 import PointEditView from '../view/point-edit-view.js';
 import PointView from '../view/point-view.js';
 import NoPointView from '../view/no-point-view.js';
+import { FilterType, TextForNoPointView, SortType } from '../const.js';
 
 export default class PointsPresenter {
   #pointListComponent = new PointListView();
-  #offersModel = new OffersModel();
-  #offers = [...this.#offersModel.offers];
-  #pointsModel = new PointsModel(this.#offers);
-  #points = [...this.#pointsModel.points];
 
   #tripContainer = null;
   #pointsContainer = null;
+  #offers = null;
+  #points = null;
 
-  constructor(tripContainer, pointsContainer) {
+  constructor(tripContainer, pointsContainer, offers, points) {
     this.#tripContainer = tripContainer;
     this.#pointsContainer = pointsContainer;
+    this.#offers = offers;
+    this.#points = points;
   }
 
   init = () => {
@@ -73,13 +72,13 @@ export default class PointsPresenter {
   #renderPage = () => {
     render(this.#pointListComponent, this.#pointsContainer);
 
-    if (this.#points.length === 0) {
-      render(new NoPointView(), this.#pointListComponent.element);
+    if (!this.#points.length) {
+      render(new NoPointView(TextForNoPointView[FilterType.EVERYTHING]), this.#pointListComponent.element);
       return;
     }
 
     render(new TripView(this.#points, this.#offers), this.#tripContainer, 'afterbegin');
-    render(new SortView(), this.#pointListComponent.element, 'beforebegin');
+    render(new SortView(Object.values(SortType)), this.#pointListComponent.element, 'beforebegin');
 
     for(let i = 0; i< this.#points.length; i++) {
       // Получаем только те доп. опции, которые подходят под тип текущей точки маршрута
