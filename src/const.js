@@ -28,4 +28,10 @@ const TextForNoPointView = {
   [FilterType.PAST]: 'There are no past events now',
 };
 
-export { TYPES, DESTINATIONS, SENTENCES, FilterType, TextForNoPointView };
+const SortType = {
+  DAY: 'day',
+  TIME: 'time',
+  PRICE: 'price',
+};
+
+export { TYPES, DESTINATIONS, SENTENCES, FilterType, TextForNoPointView, SortType };

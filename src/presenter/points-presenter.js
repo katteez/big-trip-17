@@ -5,7 +5,7 @@ import PointListView from '../view/point-list-view.js';
 import PointEditView from '../view/point-edit-view.js';
 import PointView from '../view/point-view.js';
 import NoPointView from '../view/no-point-view.js';
-import { FilterType, TextForNoPointView } from '../const.js';
+import { FilterType, TextForNoPointView, SortType } from '../const.js';
 
 export default class PointsPresenter {
   #pointListComponent = new PointListView();
@@ -78,7 +78,7 @@ export default class PointsPresenter {
     }
 
     render(new TripView(this.#points, this.#offers), this.#tripContainer, 'afterbegin');
-    render(new SortView(), this.#pointListComponent.element, 'beforebegin');
+    render(new SortView(Object.values(SortType)), this.#pointListComponent.element, 'beforebegin');
 
     for(let i = 0; i< this.#points.length; i++) {
       // Получаем только те доп. опции, которые подходят под тип текущей точки маршрута
