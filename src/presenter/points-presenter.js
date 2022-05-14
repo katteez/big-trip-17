@@ -1,4 +1,4 @@
-import { render, replace } from '../framework/render.js';
+import { RenderPosition, render, replace } from '../framework/render.js';
 import TripView from '../view/trip-view.js';
 import SortView from '../view/sort-view.js';
 import PointListView from '../view/point-list-view.js';
@@ -8,12 +8,14 @@ import NoPointView from '../view/no-point-view.js';
 import { FilterType, TextForNoPointView, SortType } from '../const.js';
 
 export default class PointsPresenter {
-  #pointListComponent = new PointListView();
-
   #tripContainer = null;
   #pointsContainer = null;
   #offers = null;
   #points = null;
+
+  #pointListComponent = new PointListView();
+  #noPointComponent = new NoPointView(TextForNoPointView[FilterType.EVERYTHING]);
+  #sortComponent = new SortView(Object.values(SortType));
 
   constructor(tripContainer, pointsContainer, offers, points) {
     this.#tripContainer = tripContainer;
@@ -24,6 +26,18 @@ export default class PointsPresenter {
 
   init = () => {
     this.#renderPage();
+  };
+
+  #renderNoPoints = () => {
+    render(this.#noPointComponent, this.#pointListComponent.element);
+  };
+
+  #renderTrip = () => {
+    render(new TripView(this.#points, this.#offers), this.#tripContainer, RenderPosition.AFTERBEGIN);
+  };
+
+  #renderSort = () => {
+    render(this.#sortComponent, this.#pointListComponent.element, RenderPosition.BEFOREBEGIN);
   };
 
   #renderPoint = (offersByPointType, point) => {
@@ -69,22 +83,25 @@ export default class PointsPresenter {
     render(pointComponent, this.#pointListComponent.element);
   };
 
+  #renderPoints = () => {
+    for (const point of this.#points) {
+      // Получаем только те доп. опции, которые подходят под тип текущей точки маршрута
+      const offersByPointType = this.#offers.find((offer) => offer.type === point.type).offers;
+
+      this.#renderPoint(offersByPointType, point);
+    }
+  };
+
   #renderPage = () => {
     render(this.#pointListComponent, this.#pointsContainer);
 
     if (!this.#points.length) {
-      render(new NoPointView(TextForNoPointView[FilterType.EVERYTHING]), this.#pointListComponent.element);
+      this.#renderNoPoints();
       return;
     }
 
-    render(new TripView(this.#points, this.#offers), this.#tripContainer, 'afterbegin');
-    render(new SortView(Object.values(SortType)), this.#pointListComponent.element, 'beforebegin');
-
-    for(let i = 0; i< this.#points.length; i++) {
-      // Получаем только те доп. опции, которые подходят под тип текущей точки маршрута
-      const offersByPointType = this.#offers.find((offer) => offer.type === this.#points[i].type).offers;
-
-      this.#renderPoint(offersByPointType, this.#points[i]);
-    }
+    this.#renderTrip();
+    this.#renderSort();
+    this.#renderPoints();
   };
 }
