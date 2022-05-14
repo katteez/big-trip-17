@@ -6,7 +6,7 @@ import NoPointView from '../view/no-point-view.js';
 import { FilterType, TextForNoPointView, SortType } from '../const.js';
 import PointPresenter from './point-presenter.js';
 
-export default class PointListPresenter {
+export default class PagePresenter {
   #tripContainer = null;
   #pointsContainer = null;
   #offers = null;
