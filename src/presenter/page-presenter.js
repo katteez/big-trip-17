@@ -48,7 +48,7 @@ export default class PagePresenter {
   };
 
   #renderPoint = (point, offersByPointType) => {
-    const pointPresenter = new PointPresenter(this.#pointListComponent.element);
+    const pointPresenter = new PointPresenter(this.#pointListComponent.element, this.#handlePointChange);
     pointPresenter.init(point, offersByPointType);
 
     this.#pointPresenterMap.set(point.id, pointPresenter);

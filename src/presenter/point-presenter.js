@@ -4,26 +4,31 @@ import PointView from '../view/point-view.js';
 
 export default class PointPresenter {
   #pointListContainer = null;
+  #changeData = null;
+
+  #point = null;
+  #offers = null;
 
   #pointComponent = null;
   #pointEditComponent = null;
 
-  #point = null;
-
-  constructor(pointListContainer) {
+  constructor(pointListContainer, changeData) {
     this.#pointListContainer = pointListContainer;
+    this.#changeData = changeData;
   }
 
-  init = (point, offersByPointType) => {
+  init = (point, offers = this.#offers) => {
     this.#point = point;
+    this.#offers = offers;
 
     const prevPointComponent = this.#pointComponent;
     const prevPointEditComponent = this.#pointEditComponent;
 
-    this.#pointComponent = new PointView(offersByPointType, point);
-    this.#pointEditComponent = new PointEditView(offersByPointType, point);
+    this.#pointComponent = new PointView(offers, point);
+    this.#pointEditComponent = new PointEditView(offers, point);
 
     this.#pointComponent.setEditClickHandler(this.#handleEditClick);
+    this.#pointComponent.setFavoriteClickHandler(this.#handleFavoriteClick);
     this.#pointEditComponent.setClickHandler(this.#handleClick);
     this.#pointEditComponent.setFormSubmitHandler(this.#handleFormSubmit);
 
@@ -73,13 +78,19 @@ export default class PointPresenter {
     this.#replacePointToForm();
   };
 
+  // Обработчик для кнопки 'Избранное'
+  #handleFavoriteClick = () => {
+    this.#changeData({...this.#point, isFavorite: !this.#point.isFavorite});
+  };
+
   // Обработчик для закрытия формы редактирования
   #handleClick = () => {
     this.#replaceFormToPoint();
   };
 
   // Обработчик для отправки отредактированных данных
-  #handleFormSubmit = () => {
+  #handleFormSubmit = (point) => {
+    this.#changeData(point);
     this.#replaceFormToPoint();
   };
 }
