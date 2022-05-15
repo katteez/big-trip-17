@@ -30,9 +30,15 @@ export default class PagePresenter {
     this.#renderPage();
   };
 
+  // Обновляем данные и представление точки маршрута
   #handlePointChange = (updatedPoint) => {
     updateItemInArray(this.#points, updatedPoint);
     this.#pointPresenterMap.get(updatedPoint.id).init(updatedPoint);
+  };
+
+  // Закрываем все формы редактирования
+  #handleModeChange = () => {
+    this.#pointPresenterMap.forEach((presenter) => presenter.resetView());
   };
 
   #renderNoPoints = () => {
@@ -48,7 +54,7 @@ export default class PagePresenter {
   };
 
   #renderPoint = (point, offersByPointType) => {
-    const pointPresenter = new PointPresenter(this.#pointListComponent.element, this.#handlePointChange);
+    const pointPresenter = new PointPresenter(this.#pointListComponent.element, this.#handlePointChange, this.#handleModeChange);
     pointPresenter.init(point, offersByPointType);
 
     this.#pointPresenterMap.set(point.id, pointPresenter);

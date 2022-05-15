@@ -2,19 +2,27 @@ import { render, replace, remove } from '../framework/render.js';
 import PointEditView from '../view/point-edit-view.js';
 import PointView from '../view/point-view.js';
 
+const Mode = {
+  DEFAULT: 'default',
+  EDITING: 'editing',
+};
+
 export default class PointPresenter {
   #pointListContainer = null;
   #changeData = null;
+  #changeMode = null;
 
   #point = null;
   #offers = null;
+  #mode = Mode.DEFAULT;
 
   #pointComponent = null;
   #pointEditComponent = null;
 
-  constructor(pointListContainer, changeData) {
+  constructor(pointListContainer, changeData, changeMode) {
     this.#pointListContainer = pointListContainer;
     this.#changeData = changeData;
+    this.#changeMode = changeMode;
   }
 
   init = (point, offers = this.#offers) => {
@@ -37,11 +45,11 @@ export default class PointPresenter {
       return;
     }
 
-    if (this.#pointListContainer.contains(prevPointComponent.element)) {
+    if (this.#mode === Mode.DEFAULT) {
       replace(this.#pointComponent, prevPointComponent);
     }
 
-    if (this.#pointListContainer.contains(prevPointEditComponent.element)) {
+    if (this.#mode === Mode.EDITING) {
       replace(this.#pointEditComponent, prevPointEditComponent);
     }
 
@@ -54,16 +62,26 @@ export default class PointPresenter {
     remove(this.#pointEditComponent);
   };
 
+  // Для закрытия всех форм редактирования из PagePresenter
+  resetView = () => {
+    if (this.#mode !== Mode.DEFAULT) {
+      this.#replaceFormToPoint();
+    }
+  };
+
   // Открываем форму редактирования
   #replacePointToForm = () => {
+    this.#changeMode();
     replace(this.#pointEditComponent, this.#pointComponent);
     document.addEventListener('keydown', this.#escKeyDownHandler);
+    this.#mode = Mode.EDITING;
   };
 
   // Закрываем форму редактирования
   #replaceFormToPoint = () => {
     replace(this.#pointComponent, this.#pointEditComponent);
     document.removeEventListener('keydown', this.#escKeyDownHandler);
+    this.#mode = Mode.DEFAULT;
   };
 
   #escKeyDownHandler = (evt) => {
