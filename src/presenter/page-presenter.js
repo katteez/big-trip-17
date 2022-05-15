@@ -5,6 +5,7 @@ import PointListView from '../view/point-list-view.js';
 import NoPointView from '../view/no-point-view.js';
 import { FilterType, TextForNoPointView, SortType } from '../const.js';
 import PointPresenter from './point-presenter.js';
+import { updateItemInArray } from '../utils/common.js';
 
 export default class PagePresenter {
   #tripContainer = null;
@@ -27,6 +28,11 @@ export default class PagePresenter {
 
   init = () => {
     this.#renderPage();
+  };
+
+  #handlePointChange = (updatedPoint) => {
+    updateItemInArray(this.#points, updatedPoint);
+    this.#pointPresenterMap.get(updatedPoint.id).init(updatedPoint);
   };
 
   #renderNoPoints = () => {

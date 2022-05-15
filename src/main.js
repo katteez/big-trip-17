@@ -12,7 +12,7 @@ const siteMainElement = document.querySelector('.page-main .trip-events');
 
 const offers = generateOffersByAllTypes();
 const pointsModel = new PointsModel(offers);
-const points = pointsModel.points;
+const points = [...pointsModel.points];
 
 const pagePresenter = new PagePresenter(siteHeaderElement, siteMainElement, offers, points);
 
