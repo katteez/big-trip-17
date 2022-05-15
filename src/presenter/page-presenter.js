@@ -16,6 +16,8 @@ export default class PagePresenter {
   #noPointComponent = new NoPointView(TextForNoPointView[FilterType.EVERYTHING]);
   #sortComponent = new SortView(Object.values(SortType));
 
+  #pointPresenterMap = new Map();
+
   constructor(tripContainer, pointsContainer, offers, points) {
     this.#tripContainer = tripContainer;
     this.#pointsContainer = pointsContainer;
@@ -42,6 +44,8 @@ export default class PagePresenter {
   #renderPoint = (point, offersByPointType) => {
     const pointPresenter = new PointPresenter(this.#pointListComponent.element);
     pointPresenter.init(point, offersByPointType);
+
+    this.#pointPresenterMap.set(point.id, pointPresenter);
   };
 
   #renderPoints = () => {
@@ -51,6 +55,11 @@ export default class PagePresenter {
 
       this.#renderPoint(point, offersByPointType);
     }
+  };
+
+  #clearPointList = () => {
+    this.#pointPresenterMap.forEach((presenter) => presenter.destroy());
+    this.#pointPresenterMap.clear();
   };
 
   #renderPage = () => {

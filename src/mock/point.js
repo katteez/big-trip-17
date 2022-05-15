@@ -1,5 +1,6 @@
-import { getRandomInteger } from '../utils/common.js';
 import dayjs from 'dayjs';
+import { nanoid } from 'nanoid';
+import { getRandomInteger } from '../utils/common.js';
 import { TYPES } from '../const.js';
 import { generateDestination } from './destination.js';
 
@@ -67,7 +68,7 @@ export const generatePoint = (offersByAllTypes) => {
     dateFrom,
     dateTo: generateDateTo(),
     destination: generateDestination(),
-    id: '0',
+    id: nanoid(),
     isFavorite: Boolean(getRandomInteger(0, 1)),
     offers: generateOfferIds(offersByAllTypes),
     type,
