@@ -7,6 +7,7 @@ const createSortItemTemplate = (sortType, isChecked) => (
       class="trip-sort__input  visually-hidden"
       type="radio" name="trip-sort"
       value="sort-${sortType}"
+      data-sort-type="${sortType}"
       ${isChecked ? 'checked' : ''}
     >
     <label class="trip-sort__btn" for="sort-${sortType}">${sortType}</label>
@@ -34,4 +35,17 @@ export default class SortView extends AbstractView {
   get template() {
     return createSortTemplate(this.#sortTypes);
   }
+
+  setSortTypeChangeHandler = (callback) => {
+    this._callback.sortTypeChange = callback;
+    this.element.addEventListener('click', this.#sortTypeChangeHandler);
+  };
+
+  #sortTypeChangeHandler = (evt) => {
+    if (evt.target.tagName !== 'INPUT') {
+      return;
+    }
+
+    this._callback.sortTypeChange(evt.target.dataset.sortType);
+  };
 }

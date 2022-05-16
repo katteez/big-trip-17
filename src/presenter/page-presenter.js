@@ -6,6 +6,8 @@ import NoPointView from '../view/no-point-view.js';
 import { FilterType, TextForNoPointView, SortType } from '../const.js';
 import PointPresenter from './point-presenter.js';
 import { updateItemInArray } from '../utils/common.js';
+import { findOffersByType } from '../utils/point.js';
+import { sortDayUp, sortEventTypeUp, sortTimeDown, sortPriceDown } from '../utils/sort.js';
 
 export default class PagePresenter {
   #tripContainer = null;
@@ -18,6 +20,7 @@ export default class PagePresenter {
   #sortComponent = new SortView(Object.values(SortType));
 
   #pointPresenterMap = new Map();
+  #currentSortType = SortType.DAY;
 
   constructor(tripContainer, pointsContainer, offers, points) {
     this.#tripContainer = tripContainer;
@@ -27,7 +30,50 @@ export default class PagePresenter {
   }
 
   init = () => {
+    this.#points.sort(sortDayUp);
     this.#renderPage();
+  };
+
+  #renderNoPoints = () => {
+    render(this.#noPointComponent, this.#pointListComponent.element);
+  };
+
+  #renderTrip = () => {
+    render(new TripView(this.#points, this.#offers), this.#tripContainer, RenderPosition.AFTERBEGIN);
+  };
+
+  #sortPoints = (sortType) => {
+    switch (sortType) {
+      case SortType.DAY:
+        this.#points.sort(sortDayUp);
+        break;
+      case SortType.EVENT:
+        this.#points.sort(sortEventTypeUp);
+        break;
+      case SortType.TIME:
+        this.#points.sort(sortTimeDown);
+        break;
+      case SortType.PRICE:
+        this.#points.sort(sortPriceDown);
+        break;
+    }
+
+    this.#currentSortType = sortType;
+  };
+
+  #handleSortTypeChange = (sortType) => {
+    if (this.#currentSortType === sortType) {
+      return;
+    }
+
+    this.#sortPoints(sortType);
+    this.#clearPointList();
+    this.#renderPoints();
+  };
+
+  #renderSort = () => {
+    render(this.#sortComponent, this.#pointListComponent.element, RenderPosition.BEFOREBEGIN);
+    this.#sortComponent.setSortTypeChangeHandler(this.#handleSortTypeChange);
   };
 
   // Обновляем данные и представление точки маршрута
@@ -41,18 +87,6 @@ export default class PagePresenter {
     this.#pointPresenterMap.forEach((presenter) => presenter.resetView());
   };
 
-  #renderNoPoints = () => {
-    render(this.#noPointComponent, this.#pointListComponent.element);
-  };
-
-  #renderTrip = () => {
-    render(new TripView(this.#points, this.#offers), this.#tripContainer, RenderPosition.AFTERBEGIN);
-  };
-
-  #renderSort = () => {
-    render(this.#sortComponent, this.#pointListComponent.element, RenderPosition.BEFOREBEGIN);
-  };
-
   #renderPoint = (point, offersByPointType) => {
     const pointPresenter = new PointPresenter(this.#pointListComponent.element, this.#handlePointChange, this.#handleModeChange);
     pointPresenter.init(point, offersByPointType);
@@ -62,10 +96,9 @@ export default class PagePresenter {
 
   #renderPoints = () => {
     for (const point of this.#points) {
-      // Получаем только те доп. опции, которые подходят под тип текущей точки маршрута
-      const offersByPointType = this.#offers.find((offer) => offer.type === point.type).offers;
+      const offersByType = findOffersByType(this.#offers, point.type);
 
-      this.#renderPoint(point, offersByPointType);
+      this.#renderPoint(point, offersByType);
     }
   };
 
