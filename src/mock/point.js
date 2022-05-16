@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import { nanoid } from 'nanoid';
 import { getRandomInteger } from '../utils/common.js';
+import { findOffersByType } from '../utils/point.js';
 import { TYPES } from '../const.js';
 import { generateDestination } from './destination.js';
 
@@ -41,9 +42,7 @@ let type = null;
 
 const generateOfferIds = (offersByAllTypes) => {
   const randomOfferIds = [];
-
-  // Получаем только те доп. опции, которые подходят под тип текущей точки маршрута
-  const offersByPointType = offersByAllTypes.find((offer) => offer.type === type).offers;
+  const offersByPointType = findOffersByType(offersByAllTypes, type);
 
   if (offersByPointType && offersByPointType.length) {
     for (const offer of offersByPointType) {
