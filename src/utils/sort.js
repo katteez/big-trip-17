@@ -1,10 +1,37 @@
-import { SortType } from '../const.js';
+import dayjs from 'dayjs';
 import { getDuration } from './point.js';
 
-const sort = {
-  [SortType.DAY]: (points) => points.slice().sort((a, b) => a.dateFrom - b.dateFrom),
-  [SortType.TIME]: (points) => points.slice().sort((a, b) => getDuration(b.dateTo, b.dateFrom) - getDuration(a.dateTo, a.dateFrom)),
-  [SortType.PRICE]: (points) => points.slice().sort((a, b) => b.basePrice - a.basePrice),
+// const selectedOffers = (selectedOfferIds, offersByType) => {
+//   if (offersByType && offersByType.length) {
+//     return selectedOfferIds.map((selectedOfferId) => offersByType.find((offer) => offer.id === selectedOfferId));
+//   }
+
+//   return [];
+// };
+
+// const sortPriceDown = (pointA, pointB) => {
+//   const totalCostForPointB = calculateTotalCostForPoint(pointB.basePrice, selectedOffers(pointB.offers));
+//   const totalCostForPointA = calculateTotalCostForPoint(pointA.basePrice, selectedOffers(pointA.offers));
+
+//   return totalCostForPointB - totalCostForPointA;
+// };
+
+const sortDayUp = (pointA, pointB) => dayjs(pointA.dateFrom).diff(dayjs(pointB.dateFrom));
+
+const sortEventTypeUp = (pointA, pointB) => {
+  if (pointA.type < pointB.type) {
+    return -1;
+  }
+
+  if (pointA.type > pointB.type) {
+    return 1;
+  }
+
+  return 0;
 };
 
-export { sort };
+const sortTimeDown = (pointA, pointB) => getDuration(pointB.dateTo, pointB.dateFrom) - getDuration(pointA.dateTo, pointA.dateFrom);
+
+const sortPriceDown = (pointA, pointB) => pointB.basePrice - pointA.basePrice;
+
+export { sortDayUp, sortEventTypeUp, sortTimeDown, sortPriceDown };

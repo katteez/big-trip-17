@@ -7,8 +7,7 @@ export default class PointsModel {
     this.#offers = offers;
   }
 
-  // Получаем точки и сортируем их в порядке возрастания даты начала
-  #points = () => Array.from({length: 3}, () => generatePoint(this.#offers)).sort((a, b) => a.dateFrom - b.dateFrom);
+  #points = () => Array.from({length: 10}, () => generatePoint(this.#offers));
 
   get points() {
     return this.#points();
