@@ -8,7 +8,7 @@ import {
   humanizeDuration
 } from '../utils/point.js';
 
-// Точка маршрута
+// Доп. опции
 const createPointViewOffersTemplate = (selectedOfferIds, offers) => selectedOfferIds.map((selectedOfferId) => {
   // Находим выбранную опцию по ее Id
   const selectedOffer = offers.find((offer) => offer.id === selectedOfferId);

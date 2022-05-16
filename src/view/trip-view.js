@@ -1,34 +1,30 @@
 import AbstractView from '../framework/view/abstract-view.js';
 import { humanizeTripDates } from '../utils/trip.js';
+import { findOffersByType, calculateTotalCostForPoint } from '../utils/point.js';
 
-const createTripTemplate = (points, offers) => {
+const createTripTemplate = (points, offersByAllTypes) => {
   const tripDestinations = [];
 
   const startDate = points[0].dateFrom;
   const endDate = points[points.length-1].dateTo;
   const tripDate = humanizeTripDates(startDate, endDate);
 
-  let basePriceForAllPoints = 0;
-  let priceForAllPointsOffers = 0;
+  let totalCostForTrip = 0;
 
   for (const point of points) {
     if (tripDestinations.indexOf(point.destination.name) === -1) {
       tripDestinations.push(point.destination.name);
     }
 
-    basePriceForAllPoints += point.basePrice;
+    const offersByType = findOffersByType(offersByAllTypes, point.type);
+    const selectedOffers = point.offers.map((selectedOfferId) => offersByType.find((offer) => offer.id === selectedOfferId));
 
-    // Получаем только те доп. опции, которые подходят под тип текущей точки маршрута
-    const offersByPointType = offers.find((offer) => offer.type === point.type).offers;
-
-    priceForAllPointsOffers += offersByPointType.reduce((total, offer) => total + offer.price, 0);
+    totalCostForTrip += calculateTotalCostForPoint(point.basePrice, selectedOffers);
   }
 
   const tripTitle = tripDestinations.length <= 3
     ? tripDestinations.join(' &mdash; ')
     : `${tripDestinations[0]} &mdash;... &mdash; ${tripDestinations[tripDestinations.length-1]}`;
-
-  const totalCost = basePriceForAllPoints + priceForAllPointsOffers;
 
   return (
     `<section class="trip-main__trip-info  trip-info">
@@ -39,7 +35,7 @@ const createTripTemplate = (points, offers) => {
       </div>
 
       <p class="trip-info__cost">
-        Total: &euro;&nbsp;<span class="trip-info__cost-value">${totalCost}</span>
+        Total: &euro;&nbsp;<span class="trip-info__cost-value">${totalCostForTrip}</span>
       </p>
     </section>`
   );
@@ -47,15 +43,15 @@ const createTripTemplate = (points, offers) => {
 
 export default class TripView extends AbstractView {
   #points = null;
-  #offers = null;
+  #offersByAllTypes = null;
 
-  constructor(points, offers) {
+  constructor(points, offersByAllTypes) {
     super();
     this.#points = points;
-    this.#offers = offers;
+    this.#offersByAllTypes = offersByAllTypes;
   }
 
   get template() {
-    return createTripTemplate(this.#points, this.#offers);
+    return createTripTemplate(this.#points, this.#offersByAllTypes);
   }
 }

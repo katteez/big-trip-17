@@ -47,6 +47,10 @@ const humanizeDuration = (duration) => {
   return '';
 };
 
+const findOffersByType = (offersByAllTypes, type) => offersByAllTypes.find((offer) => offer.type === type).offers;
+
+const calculateTotalCostForPoint = (basePrice, selectedOffers) => basePrice + selectedOffers.reduce((total, offer) => total + offer.price, 0);
+
 export {
   humanizePointDate,
   humanizePointDateForAttribute,
@@ -54,5 +58,7 @@ export {
   humanizePointTimeForAttribute,
   humanizePointDateTime,
   getDuration,
-  humanizeDuration
+  humanizeDuration,
+  findOffersByType,
+  calculateTotalCostForPoint
 };
