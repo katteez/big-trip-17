@@ -1,6 +1,6 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { TYPES, DESTINATIONS } from '../const.js';
-import { humanizePointDateTime, findOffersByType, findDestinationByName } from '../utils/point.js';
+import { humanizePointDateTime, getDuration, formatDateToJson, findOffersByType, findDestinationByName } from '../utils/point.js';
 
 const BLANK_POINT = {
   basePrice: '',
@@ -130,6 +130,7 @@ const createPointEditTemplate = (offersByType, data) => {
   const startTime = humanizePointDateTime(dateFrom);
   const endTime = humanizePointDateTime(dateTo);
   const selectedOfferIds = data.offers;
+  const isSubmitDisabled = !destinationName || !startTime || !endTime;
 
   const eventTypesTemplate = createPointEditViewEventTypeListTemplate(type);
   const destinationsTemplate = createPointEditViewDestinationListTemplate();
@@ -181,7 +182,9 @@ const createPointEditTemplate = (offersByType, data) => {
           <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${basePrice}">
         </div>
 
-        <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
+        <button class="event__save-btn  btn  btn--blue" type="submit"
+          ${isSubmitDisabled ? 'disabled' : ''}
+        >Save</button>
         <button class="event__reset-btn" type="reset">Delete</button>
         ${rollupButtonTemplate}
       </header>
@@ -229,7 +232,7 @@ export default class PointEditView extends AbstractStatefulView {
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this._callback.click);
   };
 
-  // Смена типа
+  // Изменение типа
   #eventTypeClickHandler = (evt) => {
     if (evt.target.tagName !== 'INPUT') {
       return;
@@ -244,7 +247,7 @@ export default class PointEditView extends AbstractStatefulView {
     });
   };
 
-  // Смена направления
+  // Изменение направления
   #destinationChangeHandler = (evt) => {
     const destination = findDestinationByName(this.#allDestinations, evt.target.value);
 
@@ -255,7 +258,48 @@ export default class PointEditView extends AbstractStatefulView {
     });
   };
 
-  // Смена доп. опций
+  #getNewDate = (newValue) => {
+    const newDateArray = newValue.split('/');
+    const newDate = [newDateArray[1], newDateArray[0], newDateArray[2]].join('/'); // меняем число и месяц местами
+    return formatDateToJson(newDate);
+  };
+
+  // Изменение даты начала
+  #dateFromChangeHandler = (evt) => {
+    let newDateFrom = this.#getNewDate(evt.target.value);
+
+    // Если дата начала больше даты окончания
+    if (getDuration(this._state.dateTo, newDateFrom) < 0) {
+      newDateFrom = '';
+    }
+
+    this.updateElement({
+      dateFrom: newDateFrom,
+    });
+  };
+
+  // Изменение даты окончания
+  #dateToChangeHandler = (evt) => {
+    let newDateTo = this.#getNewDate(evt.target.value);
+
+    // Если дата начала больше даты окончания
+    if (getDuration(newDateTo, this._state.dateFrom) < 0) {
+      newDateTo = '';
+    }
+
+    this.updateElement({
+      dateTo: newDateTo,
+    });
+  };
+
+  // Изменение цены
+  #priceInputHandler = (evt) => {
+    this._setState({
+      basePrice: evt.target.value,
+    });
+  };
+
+  // Изменение доп. опций
   #offerClickHandler = (evt) => {
     if (evt.target.tagName !== 'INPUT') {
       return;
@@ -286,6 +330,12 @@ export default class PointEditView extends AbstractStatefulView {
       .addEventListener('click', this.#eventTypeClickHandler);
     this.element.querySelector('#event-destination-1')
       .addEventListener('change', this.#destinationChangeHandler);
+    this.element.querySelector('#event-start-time-1')
+      .addEventListener('change', this.#dateFromChangeHandler);
+    this.element.querySelector('#event-end-time-1')
+      .addEventListener('change', this.#dateToChangeHandler);
+    this.element.querySelector('#event-price-1')
+      .addEventListener('input', this.#priceInputHandler);
 
     if (this.#offersByType && this.#offersByType.length) {
       this.element.querySelector('.event__available-offers')
