@@ -1,4 +1,5 @@
 import { render } from './framework/render.js';
+import { destinations } from './mock/destinations.js';
 import { generateOffersByAllTypes } from './mock/offers.js';
 import { generateFilter } from './mock/filter.js';
 import PointsModel from './model/points-model.js';
@@ -11,10 +12,10 @@ const siteHeaderControlsElement = siteHeaderElement.querySelector('.trip-control
 const siteMainElement = document.querySelector('.page-main .trip-events');
 
 const offers = generateOffersByAllTypes();
-const pointsModel = new PointsModel(offers);
+const pointsModel = new PointsModel(destinations, offers);
 const points = [...pointsModel.points];
 
-const pagePresenter = new PagePresenter(siteHeaderElement, siteMainElement, offers, points);
+const pagePresenter = new PagePresenter(siteHeaderElement, siteMainElement, offers, destinations, points);
 
 const filters = generateFilter(points);
 

@@ -1,6 +1,7 @@
 import { render, replace, remove } from '../framework/render.js';
 import PointEditView from '../view/point-edit-view.js';
 import PointView from '../view/point-view.js';
+import { findOffersByType } from '../utils/point.js';
 
 const Mode = {
   DEFAULT: 'default',
@@ -9,35 +10,38 @@ const Mode = {
 
 export default class PointPresenter {
   #pointListContainer = null;
+  #offersByAllTypes = null;
+  #allDestinations = null;
   #changeData = null;
   #changeMode = null;
 
   #point = null;
-  #offers = null;
   #mode = Mode.DEFAULT;
 
   #pointComponent = null;
   #pointEditComponent = null;
 
-  constructor(pointListContainer, changeData, changeMode) {
+  constructor(pointListContainer, offersByAllTypes, allDestinations, changeData, changeMode) {
     this.#pointListContainer = pointListContainer;
+    this.#offersByAllTypes = offersByAllTypes;
+    this.#allDestinations = allDestinations;
     this.#changeData = changeData;
     this.#changeMode = changeMode;
   }
 
-  init = (point, offers = this.#offers) => {
+  init = (point) => {
     this.#point = point;
-    this.#offers = offers;
+    const offersByType = findOffersByType(this.#offersByAllTypes, point.type);
 
     const prevPointComponent = this.#pointComponent;
     const prevPointEditComponent = this.#pointEditComponent;
 
-    this.#pointComponent = new PointView(offers, point);
-    this.#pointEditComponent = new PointEditView(offers, point);
+    this.#pointComponent = new PointView(offersByType, point);
+    this.#pointEditComponent = new PointEditView(this.#allDestinations, this.#offersByAllTypes, offersByType, point);
 
     this.#pointComponent.setEditClickHandler(this.#handleEditClick);
     this.#pointComponent.setFavoriteClickHandler(this.#handleFavoriteClick);
-    this.#pointEditComponent.setClickHandler(this.#handleClick);
+    this.#pointEditComponent.setRollupButtonClickHandler(this.#handleClick);
     this.#pointEditComponent.setFormSubmitHandler(this.#handleFormSubmit);
 
     if (!prevPointComponent || !prevPointEditComponent) {
