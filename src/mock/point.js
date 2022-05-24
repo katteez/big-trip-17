@@ -3,7 +3,6 @@ import { nanoid } from 'nanoid';
 import { getRandomInteger } from '../utils/common.js';
 import { findOffersByType } from '../utils/point.js';
 import { TYPES } from '../const.js';
-import { generateDestination } from './destination.js';
 
 const generatePrice = () => getRandomInteger(10, 1500);
 
@@ -58,7 +57,7 @@ const generateOfferIds = (offersByAllTypes) => {
   return randomOfferIds;
 };
 
-export const generatePoint = (offersByAllTypes) => {
+export const generatePoint = (allDestinations, offersByAllTypes) => {
   dateFrom = generateDateFrom();
   type = generateType();
 
@@ -66,7 +65,7 @@ export const generatePoint = (offersByAllTypes) => {
     basePrice: generatePrice(),
     dateFrom,
     dateTo: generateDateTo(),
-    destination: generateDestination(),
+    destination: allDestinations[getRandomInteger(0, allDestinations.length - 1)],
     id: nanoid(),
     isFavorite: Boolean(getRandomInteger(0, 1)),
     offers: generateOfferIds(offersByAllTypes),

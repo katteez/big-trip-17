@@ -1,6 +1,6 @@
-import AbstractView from '../framework/view/abstract-view.js';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { TYPES, DESTINATIONS } from '../const.js';
-import { humanizePointDateTime } from '../utils/point.js';
+import { humanizePointDateTime, getDuration, formatDateToJson, findOffersByType, findDestinationByName } from '../utils/point.js';
 
 const BLANK_POINT = {
   basePrice: '',
@@ -30,34 +30,37 @@ const createPointEditViewDestinationListTemplate = () => DESTINATIONS.map((desti
 )).join('');
 
 // Кнопка открытия/закрытия формы редактирования
-const createPointEditViewRollupButtonTemplate = (point) => point ? (
+const createPointEditViewRollupButtonTemplate = (id) => id ? (
   `<button class="event__rollup-btn" type="button">
     <span class="visually-hidden">Open event</span>
   </button>`
 ) : '';
 
 // Доп. опция
-const createPointEditViewOfferSelectorsTemplate = (offers, selectedOffers) => offers.map((offer) => {
-  const checked = selectedOffers.includes(offer.id) ? 'checked' : '';
+const createPointEditViewOfferSelectorTemplate = (offer, selectedOfferIds) => {
+  const {id, title, price} = offer;
+  const checked = selectedOfferIds.includes(id) ? 'checked' : '';
 
   return (
     `<div class="event__offer-selector">
-      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.id}" type="checkbox" name="event-offer-${offer.id}"
+      <input class="event__offer-checkbox  visually-hidden" id="event-offer-${id}" type="checkbox" name="event-offer-${id}"
         ${checked}
       >
-      <label class="event__offer-label" for="event-offer-${offer.id}">
-        <span class="event__offer-title">${offer.title}</span>
+      <label class="event__offer-label" for="event-offer-${id}">
+        <span class="event__offer-title">${title}</span>
         &plus;&euro;&nbsp;
-        <span class="event__offer-price">${offer.price}</span>
+        <span class="event__offer-price">${price}</span>
       </label>
     </div>`
   );
-}).join('');
+};
 
 // Секция с доп. опциями
-const createPointEditViewOffersSectionTemplate = (offers, selectedOffers) => {
-  if (offers && offers.length) {
-    const offerSelectorsTemplate = createPointEditViewOfferSelectorsTemplate(offers, selectedOffers);
+const createPointEditViewOffersSectionTemplate = (offersByType, selectedOfferIds) => {
+  if (offersByType && offersByType.length) {
+    const offerSelectorsTemplate = offersByType
+      .map((offer) => createPointEditViewOfferSelectorTemplate(offer, selectedOfferIds))
+      .join('');
 
     return (
       `<section class="event__section  event__section--offers">
@@ -74,19 +77,19 @@ const createPointEditViewOffersSectionTemplate = (offers, selectedOffers) => {
 };
 
 // Фотография пункта назначения
-const createPointEditViewEventPhotoTemplate = (photos) => photos.map((photo) => (
+const createPointEditViewEventPhotoTemplate = (photo) => (
   `<img class="event__photo" src="http://picsum.photos/248/152?r=${photo.src}" alt="${photo.description}"></img>`
-)).join('');
+);
 
 // Контейнер с фотографиями пункта назначения
 const createPointEditViewPhotosContainerTemplate = (photos) => {
   if(photos && photos.length) {
-    const eventPhotoTemplate = createPointEditViewEventPhotoTemplate(photos);
+    const eventPhotosTemplate = photos.map((photo) => createPointEditViewEventPhotoTemplate(photo)).join('');
 
     return (
       `<div class="event__photos-container">
         <div class="event__photos-tape">
-          ${eventPhotoTemplate}
+          ${eventPhotosTemplate}
         </div>
       </div>`
     );
@@ -95,9 +98,9 @@ const createPointEditViewPhotosContainerTemplate = (photos) => {
   return '';
 };
 
-// // Секция с описанием пункта назначения
-const createPointEditViewDestinationSectionTemplate = (pointId, description, photos) => {
-  if(pointId) {
+// Секция с описанием пункта назначения
+const createPointEditViewDestinationSectionTemplate = (description, photos) => {
+  if(description) {
     const photosContainerTemplate = createPointEditViewPhotosContainerTemplate(photos);
 
     return (
@@ -112,28 +115,28 @@ const createPointEditViewDestinationSectionTemplate = (pointId, description, pho
   return '';
 };
 
-const createPointEditTemplate = (offers, point) => {
+const createPointEditTemplate = (offersByType, data) => {
   const {
     basePrice,
     dateFrom,
     dateTo,
-    destination,
     id,
     type,
-  } = point;
+    destinationName,
+    destinationDescription,
+    destinationPhotos,
+  } = data;
 
   const startTime = humanizePointDateTime(dateFrom);
   const endTime = humanizePointDateTime(dateTo);
-  const destinationName = destination ? destination.name : '';
-  const destinationDescription = destination ? destination.description : '';
-  const destinationPhotos = destination ? [...destination.pictures] : [];
-  const selectedOffers = point.offers;
+  const selectedOfferIds = data.offers;
+  const isSubmitDisabled = !destinationName || !startTime || !endTime;
 
   const eventTypesTemplate = createPointEditViewEventTypeListTemplate(type);
   const destinationsTemplate = createPointEditViewDestinationListTemplate();
-  const rollupButtonTemplate = createPointEditViewRollupButtonTemplate(point);
-  const offersSectionTemplate = createPointEditViewOffersSectionTemplate(offers, selectedOffers);
-  const destinationSectionTemplate = createPointEditViewDestinationSectionTemplate(id, destinationDescription, destinationPhotos);
+  const rollupButtonTemplate = createPointEditViewRollupButtonTemplate(id);
+  const offersSectionTemplate = createPointEditViewOffersSectionTemplate(offersByType, selectedOfferIds);
+  const destinationSectionTemplate = createPointEditViewDestinationSectionTemplate(destinationDescription, destinationPhotos);
 
   return (`<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -179,7 +182,9 @@ const createPointEditTemplate = (offers, point) => {
           <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${basePrice}">
         </div>
 
-        <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
+        <button class="event__save-btn  btn  btn--blue" type="submit"
+          ${isSubmitDisabled ? 'disabled' : ''}
+        >Save</button>
         <button class="event__reset-btn" type="reset">Delete</button>
         ${rollupButtonTemplate}
       </header>
@@ -193,18 +198,23 @@ const createPointEditTemplate = (offers, point) => {
   );
 };
 
-export default class PointEditView extends AbstractView {
-  #offers = null;
-  #point = null;
+export default class PointEditView extends AbstractStatefulView {
+  #allDestinations = null;
+  #offersByAllTypes = null;
+  #offersByType = null;
 
-  constructor(offers, point = BLANK_POINT) {
+  constructor(allDestinations, offersByAllTypes, offersByType, point = BLANK_POINT) {
     super();
-    this.#offers = offers;
-    this.#point = point;
+    this.#allDestinations = allDestinations;
+    this.#offersByAllTypes = offersByAllTypes;
+    this.#offersByType = offersByType;
+    this._state = PointEditView.convertPointToState(point);
+
+    this.#setInnerHandlers();
   }
 
   get template() {
-    return createPointEditTemplate(this.#offers, this.#point);
+    return createPointEditTemplate(this.#offersByType, this._state);
   }
 
   setFormSubmitHandler = (callback) => {
@@ -214,11 +224,154 @@ export default class PointEditView extends AbstractView {
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this._callback.formSubmit(this.#point);
+    this._callback.formSubmit(PointEditView.convertStateToPoint(this._state));
   };
 
-  setClickHandler = (callback) => {
+  setRollupButtonClickHandler = (callback) => {
     this._callback.click = callback;
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this._callback.click);
+  };
+
+  reset = (point) => {
+    this.updateElement(
+      PointEditView.convertPointToState(point),
+    );
+  };
+
+  // Изменение типа
+  #eventTypeClickHandler = (evt) => {
+    if (evt.target.tagName !== 'INPUT') {
+      return;
+    }
+
+    const newType = evt.target.value;
+    this.#offersByType = findOffersByType(this.#offersByAllTypes, newType);
+
+    this.updateElement({
+      type: newType,
+      offers: [],
+    });
+  };
+
+  // Изменение направления
+  #destinationChangeHandler = (evt) => {
+    const destination = findDestinationByName(this.#allDestinations, evt.target.value);
+
+    this.updateElement({
+      destinationName: destination ? destination.name : '',
+      destinationDescription: destination ? destination.description : '',
+      destinationPhotos: destination ? [...destination.pictures] : [],
+    });
+  };
+
+  #getNewDate = (newValue) => {
+    const newDateArray = newValue.split('/');
+    const newDate = [newDateArray[1], newDateArray[0], newDateArray[2]].join('/'); // меняем число и месяц местами
+    return formatDateToJson(newDate);
+  };
+
+  // Изменение даты начала
+  #dateFromChangeHandler = (evt) => {
+    let newDateFrom = this.#getNewDate(evt.target.value);
+
+    // Если дата начала больше даты окончания
+    if (getDuration(this._state.dateTo, newDateFrom) < 0) {
+      newDateFrom = '';
+    }
+
+    this.updateElement({
+      dateFrom: newDateFrom,
+    });
+  };
+
+  // Изменение даты окончания
+  #dateToChangeHandler = (evt) => {
+    let newDateTo = this.#getNewDate(evt.target.value);
+
+    // Если дата начала больше даты окончания
+    if (getDuration(newDateTo, this._state.dateFrom) < 0) {
+      newDateTo = '';
+    }
+
+    this.updateElement({
+      dateTo: newDateTo,
+    });
+  };
+
+  // Изменение цены
+  #priceInputHandler = (evt) => {
+    this._setState({
+      basePrice: evt.target.value,
+    });
+  };
+
+  // Изменение доп. опций
+  #offerClickHandler = (evt) => {
+    if (evt.target.tagName !== 'INPUT') {
+      return;
+    }
+
+    const toAdd = evt.target.checked;
+    const idStringArray = evt.target.id.split('event-offer-');
+    const newOfferId = +idStringArray[idStringArray.length-1];
+
+    const oldOfferIds = [...this._state.offers];
+    let newOfferIds;
+
+    if (toAdd) {
+      newOfferIds = [...oldOfferIds, newOfferId];
+    } else {
+      const id = oldOfferIds.findIndex((offerId) => offerId === newOfferId);
+      oldOfferIds.splice(id, 1);
+      newOfferIds = oldOfferIds;
+    }
+
+    this._setState({
+      offers: newOfferIds,
+    });
+  };
+
+  #setInnerHandlers = () => {
+    this.element.querySelector('.event__type-list')
+      .addEventListener('click', this.#eventTypeClickHandler);
+    this.element.querySelector('#event-destination-1')
+      .addEventListener('change', this.#destinationChangeHandler);
+    this.element.querySelector('#event-start-time-1')
+      .addEventListener('change', this.#dateFromChangeHandler);
+    this.element.querySelector('#event-end-time-1')
+      .addEventListener('change', this.#dateToChangeHandler);
+    this.element.querySelector('#event-price-1')
+      .addEventListener('input', this.#priceInputHandler);
+
+    if (this.#offersByType && this.#offersByType.length) {
+      this.element.querySelector('.event__available-offers')
+        .addEventListener('click', this.#offerClickHandler);
+    }
+  };
+
+  _restoreHandlers = () => {
+    this.#setInnerHandlers();
+    this.setFormSubmitHandler(this._callback.formSubmit);
+    this.setRollupButtonClickHandler(this._callback.click);
+  };
+
+  static convertPointToState = (point) => ({...point,
+    destinationName: point.destination ? point.destination.name : '',
+    destinationDescription: point.destination ? point.destination.description : '',
+    destinationPhotos: point.destination ? [...point.destination.pictures] : [],
+  });
+
+  static convertStateToPoint = (state) => {
+    const point = {...state};
+
+    point.destination.name = point.destinationName;
+    point.destination.description = point.destinationDescription;
+    point.destination.pictures = [...point.destinationPhotos];
+
+    delete point.destinationName;
+    delete point.destinationDescription;
+    delete point.destinationPhotos;
+
+    return point;
   };
 }

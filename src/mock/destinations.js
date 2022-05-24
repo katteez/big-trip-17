@@ -9,17 +9,11 @@ const generateDescription = () => {
   return Array.from({length: sentencesQuantity}, getRandomSentence).join(' ');
 };
 
-const generateCity = () => {
-  const randomIndex = getRandomInteger(0, DESTINATIONS.length - 1);
-
-  return DESTINATIONS[randomIndex];
-};
-
 const generatePictures = () => {
   const picturesQuantity = 5;
-  const arePictures = Boolean(getRandomInteger(0, 1));
+  const hasPictures = Boolean(getRandomInteger(0, 1));
 
-  if (arePictures) {
+  if (hasPictures) {
     const getRandomPictureSrc = () => `http://picsum.photos/248/152?r=${getRandomInteger(0, 500)}`;
 
     // Берем из рандомного предложения первые 20 символов для описания картинки
@@ -36,8 +30,8 @@ const generatePictures = () => {
   return [];
 };
 
-export const generateDestination = () => ({
-  description: generateDescription(),
-  name: generateCity(),
+export const destinations = DESTINATIONS.map((destination) => ({
+  name: destination,
+  description: `${destination} ${generateDescription()}`,
   pictures: generatePictures(),
-});
+}));

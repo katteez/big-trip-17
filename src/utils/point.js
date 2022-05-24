@@ -47,7 +47,11 @@ const humanizeDuration = (duration) => {
   return '';
 };
 
+const formatDateToJson = (date) => dayjs(date).toJSON();
+
 const findOffersByType = (offersByAllTypes, type) => offersByAllTypes.find((offer) => offer.type === type).offers;
+
+const findDestinationByName = (allDestinations, name) => allDestinations.find((destination) => destination.name === name);
 
 const calculateTotalCostForPoint = (basePrice, selectedOffers) => basePrice + selectedOffers.reduce((total, offer) => total + offer.price, 0);
 
@@ -59,6 +63,8 @@ export {
   humanizePointDateTime,
   getDuration,
   humanizeDuration,
+  formatDateToJson,
   findOffersByType,
+  findDestinationByName,
   calculateTotalCostForPoint
 };

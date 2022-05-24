@@ -53,10 +53,10 @@ export const generateOffersByAllTypes = () => {
   const offersByAllTypes = [];
 
   for (const type of TYPES) {
-    const areOffers = Boolean(getRandomInteger(0, 1));
+    const hasOffers = Boolean(getRandomInteger(0, 1));
     const randomOffers = [];
 
-    if (areOffers) {
+    if (hasOffers) {
       const randomOffersQuantity = getRandomInteger(1, 5);
 
       // Получаем массив с неповторяющимися доп. опциями
