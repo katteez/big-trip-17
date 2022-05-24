@@ -1,3 +1,5 @@
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { TYPES, DESTINATIONS } from '../const.js';
 import { humanizePointDateTime, getDuration, formatDateToJson, findOffersByType, findDestinationByName } from '../utils/point.js';
@@ -130,7 +132,7 @@ const createPointEditTemplate = (offersByType, data) => {
   const startTime = humanizePointDateTime(dateFrom);
   const endTime = humanizePointDateTime(dateTo);
   const selectedOfferIds = data.offers;
-  const isSubmitDisabled = !destinationName || !startTime || !endTime;
+  const isSubmitDisabled = !basePrice || !startTime || !endTime || !type || !destinationName;
 
   const eventTypesTemplate = createPointEditViewEventTypeListTemplate(type);
   const destinationsTemplate = createPointEditViewDestinationListTemplate();
@@ -179,7 +181,10 @@ const createPointEditTemplate = (offersByType, data) => {
             <span class="visually-hidden">Price</span>
             &euro;
           </label>
-          <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${basePrice}">
+          <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price"
+            min="0" step="1"
+            value="${basePrice}"
+          >
         </div>
 
         <button class="event__save-btn  btn  btn--blue" type="submit"
@@ -203,6 +208,9 @@ export default class PointEditView extends AbstractStatefulView {
   #offersByAllTypes = null;
   #offersByType = null;
 
+  #startDatePicker = null;
+  #endDatePicker = null;
+
   constructor(allDestinations, offersByAllTypes, offersByType, point = BLANK_POINT) {
     super();
     this.#allDestinations = allDestinations;
@@ -211,6 +219,8 @@ export default class PointEditView extends AbstractStatefulView {
     this._state = PointEditView.convertPointToState(point);
 
     this.#setInnerHandlers();
+    this.#setStartDatePicker();
+    this.#setEndDatePicker();
   }
 
   get template() {
@@ -230,6 +240,20 @@ export default class PointEditView extends AbstractStatefulView {
   setRollupButtonClickHandler = (callback) => {
     this._callback.click = callback;
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this._callback.click);
+  };
+
+  removeElement = () => {
+    super.removeElement();
+
+    if (this.#startDatePicker) {
+      this.#startDatePicker.destroy();
+      this.#startDatePicker = null;
+    }
+
+    if (this.#endDatePicker) {
+      this.#endDatePicker.destroy();
+      this.#endDatePicker = null;
+    }
   };
 
   reset = (point) => {
@@ -264,15 +288,9 @@ export default class PointEditView extends AbstractStatefulView {
     });
   };
 
-  #getNewDate = (newValue) => {
-    const newDateArray = newValue.split('/');
-    const newDate = [newDateArray[1], newDateArray[0], newDateArray[2]].join('/'); // меняем число и месяц местами
-    return formatDateToJson(newDate);
-  };
-
   // Изменение даты начала
-  #dateFromChangeHandler = (evt) => {
-    let newDateFrom = this.#getNewDate(evt.target.value);
+  #dateFromChangeHandler = ([selectedDate]) => {
+    let newDateFrom = formatDateToJson(selectedDate);
 
     // Если дата начала больше даты окончания
     if (getDuration(this._state.dateTo, newDateFrom) < 0) {
@@ -285,8 +303,8 @@ export default class PointEditView extends AbstractStatefulView {
   };
 
   // Изменение даты окончания
-  #dateToChangeHandler = (evt) => {
-    let newDateTo = this.#getNewDate(evt.target.value);
+  #dateToChangeHandler = ([selectedDate]) => {
+    let newDateTo = formatDateToJson(selectedDate);
 
     // Если дата начала больше даты окончания
     if (getDuration(newDateTo, this._state.dateFrom) < 0) {
@@ -298,10 +316,41 @@ export default class PointEditView extends AbstractStatefulView {
     });
   };
 
+  #setStartDatePicker = () => {
+    this.#startDatePicker = flatpickr(
+      this.element.querySelector('#event-start-time-1'),
+      {
+        enableTime: true,
+        dateFormat: 'd/m/Y H:i',
+        defaultDate: this._state.dateFrom,
+        onChange: this.#dateFromChangeHandler,
+      },
+    );
+  };
+
+  #setEndDatePicker = () => {
+    this.#endDatePicker = flatpickr(
+      this.element.querySelector('#event-end-time-1'),
+      {
+        enableTime: true,
+        dateFormat: 'd/m/Y H:i',
+        defaultDate: this._state.dateTo,
+        onChange: this.#dateToChangeHandler,
+      },
+    );
+  };
+
   // Изменение цены
   #priceInputHandler = (evt) => {
-    this._setState({
-      basePrice: evt.target.value,
+    const regex = new RegExp('^[0-9]+$'); // только цифры
+    let newPrice = evt.target.value;
+
+    if(!regex.test(newPrice)) {
+      newPrice = '';
+    }
+
+    this.updateElement({
+      basePrice: newPrice,
     });
   };
 
@@ -336,12 +385,8 @@ export default class PointEditView extends AbstractStatefulView {
       .addEventListener('click', this.#eventTypeClickHandler);
     this.element.querySelector('#event-destination-1')
       .addEventListener('change', this.#destinationChangeHandler);
-    this.element.querySelector('#event-start-time-1')
-      .addEventListener('change', this.#dateFromChangeHandler);
-    this.element.querySelector('#event-end-time-1')
-      .addEventListener('change', this.#dateToChangeHandler);
     this.element.querySelector('#event-price-1')
-      .addEventListener('input', this.#priceInputHandler);
+      .addEventListener('change', this.#priceInputHandler);
 
     if (this.#offersByType && this.#offersByType.length) {
       this.element.querySelector('.event__available-offers')
@@ -351,6 +396,8 @@ export default class PointEditView extends AbstractStatefulView {
 
   _restoreHandlers = () => {
     this.#setInnerHandlers();
+    this.#setStartDatePicker();
+    this.#setEndDatePicker();
     this.setFormSubmitHandler(this._callback.formSubmit);
     this.setRollupButtonClickHandler(this._callback.click);
   };
