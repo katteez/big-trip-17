@@ -2,7 +2,7 @@ import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { TYPES, DESTINATIONS } from '../const.js';
-import { humanizePointDateTime, getDuration, formatDateToJson, findOffersByType, findDestinationByName } from '../utils/point.js';
+import { humanizePointDateTime, formatDateToJson, findOffersByType, findDestinationByName } from '../utils/point.js';
 
 const BLANK_POINT = {
   basePrice: '',
@@ -290,29 +290,15 @@ export default class PointEditView extends AbstractStatefulView {
 
   // Изменение даты начала
   #dateFromChangeHandler = ([selectedDate]) => {
-    let newDateFrom = formatDateToJson(selectedDate);
-
-    // Если дата начала больше даты окончания
-    if (getDuration(this._state.dateTo, newDateFrom) < 0) {
-      newDateFrom = '';
-    }
-
-    this.updateElement({
-      dateFrom: newDateFrom,
+    this._setState({
+      dateFrom: formatDateToJson(selectedDate),
     });
   };
 
   // Изменение даты окончания
   #dateToChangeHandler = ([selectedDate]) => {
-    let newDateTo = formatDateToJson(selectedDate);
-
-    // Если дата начала больше даты окончания
-    if (getDuration(newDateTo, this._state.dateFrom) < 0) {
-      newDateTo = '';
-    }
-
-    this.updateElement({
-      dateTo: newDateTo,
+    this._setState({
+      dateTo: formatDateToJson(selectedDate),
     });
   };
 
@@ -323,6 +309,7 @@ export default class PointEditView extends AbstractStatefulView {
         enableTime: true,
         dateFormat: 'd/m/Y H:i',
         defaultDate: this._state.dateFrom,
+        maxDate: this._state.dateTo,
         onChange: this.#dateFromChangeHandler,
       },
     );
@@ -335,6 +322,7 @@ export default class PointEditView extends AbstractStatefulView {
         enableTime: true,
         dateFormat: 'd/m/Y H:i',
         defaultDate: this._state.dateTo,
+        minDate: this._state.dateFrom,
         onChange: this.#dateToChangeHandler,
       },
     );
