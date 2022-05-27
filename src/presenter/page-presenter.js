@@ -79,7 +79,7 @@ export default class PagePresenter {
 
   // Обновляем данные и представление точки маршрута
   #handlePointChange = (updatedPoint) => {
-    updateItemInArray(this.#points, updatedPoint);
+    this.#points = updateItemInArray(this.#points, updatedPoint);
     this.#pointPresenterMap.get(updatedPoint.id).init(updatedPoint);
   };
 

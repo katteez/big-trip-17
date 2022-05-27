@@ -12,7 +12,11 @@ const updateItemInArray = (items, updatedItem) => {
     return items;
   }
 
-  items[updatedItemIndex] = updatedItem;
+  return [
+    ...items.slice(0, updatedItemIndex),
+    updatedItem,
+    ...items.slice(updatedItemIndex + 1),
+  ];
 };
 
 export { getRandomInteger, updateItemInArray };
