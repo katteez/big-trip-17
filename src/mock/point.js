@@ -28,7 +28,7 @@ const generateDateTo = () => {
   const hoursGap = getRandomInteger(0, maxHoursGap);
   const minutesGap = getRandomInteger(0, maxMinutesGap);
 
-  return dayjs(dateFrom).add(daysGap, 'day').add(hoursGap, 'hour').add(minutesGap, 'minute').toDate();
+  return dateFrom ? dayjs(dateFrom).add(daysGap, 'day').add(hoursGap, 'hour').add(minutesGap, 'minute').toDate() : '';
 };
 
 const generateType = () => {
