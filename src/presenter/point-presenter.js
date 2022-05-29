@@ -2,7 +2,7 @@ import { render, replace, remove } from '../framework/render.js';
 import PointView from '../view/point-view.js';
 import PointEditView from '../view/point-edit-view.js';
 import { isDatesEqual, findOffersByType } from '../utils/point.js';
-import { SortType, UserAction, UpdateType } from '../const.js';
+import { UserAction, UpdateType } from '../const.js';
 
 const Mode = {
   DEFAULT: 'default',
@@ -129,20 +129,9 @@ export default class PointPresenter {
       !isDatesEqual(this.#point.dateTo, updatedPoint.dateTo) ||
       this.#point.basePrice !== updatedPoint.basePrice;
 
-    const isMinorUpdate = this.#currentSortType === SortType.EVENT &&
-     this.#point.type !== updatedPoint.type;
-
-    let updateType = UpdateType.PATCH;
-
-    if (isMajorUpdate) {
-      updateType = UpdateType.MAJOR;
-    } else if (isMinorUpdate) {
-      updateType = UpdateType.MINOR;
-    }
-
     this.#changeData(
       UserAction.UPDATE_POINT,
-      updateType,
+      isMajorUpdate ? UpdateType.MAJOR : UpdateType.MINOR,
       updatedPoint,
     );
     this.#replaceFormToPoint();

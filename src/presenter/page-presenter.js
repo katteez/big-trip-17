@@ -162,8 +162,6 @@ export default class PagePresenter {
     remove(this.#noPointComponent);
     remove(this.#tripComponent);
     remove(this.#sortComponent);
-
-    this.#currentSortType = SortType.DAY;
   };
 
   #renderPage = () => {
