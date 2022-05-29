@@ -2,6 +2,7 @@ import { render, replace, remove } from '../framework/render.js';
 import PointEditView from '../view/point-edit-view.js';
 import PointView from '../view/point-view.js';
 import { findOffersByType } from '../utils/point.js';
+import { UserAction, UpdateType } from '../const.js';
 
 const Mode = {
   DEFAULT: 'default',
@@ -104,7 +105,11 @@ export default class PointPresenter {
 
   // Обработчик для кнопки 'Избранное'
   #handleFavoriteClick = () => {
-    this.#changeData({...this.#point, isFavorite: !this.#point.isFavorite});
+    this.#changeData(
+      UserAction.UPDATE_POINT,
+      UpdateType.PATCH,
+      {...this.#point, isFavorite: !this.#point.isFavorite},
+    );
   };
 
   // Обработчик для закрытия формы редактирования
@@ -115,7 +120,11 @@ export default class PointPresenter {
 
   // Обработчик для отправки отредактированных данных
   #handleFormSubmit = (point) => {
-    this.#changeData(point);
+    this.#changeData(
+      UserAction.UPDATE_POINT,
+      UpdateType.PATCH,
+      point,
+    );
     this.#replaceFormToPoint();
   };
 }
