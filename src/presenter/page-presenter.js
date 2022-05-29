@@ -120,6 +120,8 @@ export default class PagePresenter {
 
   // Обработчик-наблюдатель, который реагирует на изменения модели точек маршрута
   #handleModelEvent = (updateType, data) => {
+    const resetSortType = data ? !data.id : false; // сбрасываем сортировку при смене фильтра
+
     switch (updateType) {
       case UpdateType.PATCH:
         this.#pointPresenterMap.get(data.id).init(data);
@@ -129,7 +131,7 @@ export default class PagePresenter {
         this.#renderPoints();
         break;
       case UpdateType.MAJOR:
-        this.#clearPage();
+        this.#clearPage(resetSortType);
         this.#renderPage();
         break;
     }
@@ -160,7 +162,7 @@ export default class PagePresenter {
     this.#pointPresenterMap.clear();
   };
 
-  #clearPage = () => {
+  #clearPage = (resetSortType) => {
     this.#clearPointList();
 
     remove(this.#tripComponent);
@@ -168,6 +170,10 @@ export default class PagePresenter {
 
     if (this.#noPointComponent) {
       remove(this.#noPointComponent);
+    }
+
+    if (resetSortType) {
+      this.#currentSortType = SortType.DAY;
     }
   };
 
