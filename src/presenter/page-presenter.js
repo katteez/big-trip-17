@@ -1,4 +1,4 @@
-import { RenderPosition, render } from '../framework/render.js';
+import { RenderPosition, render, remove } from '../framework/render.js';
 import PointsModel from '../model/points-model.js';
 import OffersModel from '../model/offers-model.js';
 import DestinationsModel from '../model/destinations-model.js';
@@ -30,7 +30,7 @@ export default class PagePresenter {
   #filterComponent = new FilterView(this.#filters);
   #pointListComponent = new PointListView();
   #noPointComponent = new NoPointView(TextForNoPointView[FilterType.EVERYTHING]);
-  #tripComponent = new TripView(this.points, this.#offers);
+  #tripComponent = null;
   #sortComponent = null;
 
   constructor(tripContainer, filterContainer, pointListContainer) {
@@ -77,6 +77,7 @@ export default class PagePresenter {
 
   // 'Путешествие'
   #renderTrip = () => {
+    this.#tripComponent = new TripView(this.points, this.#offers);
     render(this.#tripComponent, this.#tripContainer, RenderPosition.AFTERBEGIN);
   };
 
@@ -119,10 +120,12 @@ export default class PagePresenter {
         this.#pointPresenterMap.get(updatedPoint.id).init(updatedPoint);
         break;
       case UpdateType.MINOR:
-        // обновить список (например, при переключении фильтров)
+        this.#clearPointList();
+        this.#renderPoints();
         break;
       case UpdateType.MAJOR:
-        // обновить всю страницу (например, при добавлении/удалении точки маршрута)
+        this.#clearPage();
+        this.#renderPage();
         break;
     }
   };
@@ -150,6 +153,17 @@ export default class PagePresenter {
   #clearPointList = () => {
     this.#pointPresenterMap.forEach((presenter) => presenter.destroy());
     this.#pointPresenterMap.clear();
+  };
+
+  #clearPage = () => {
+    this.#clearPointList();
+
+    remove(this.#filterComponent);
+    remove(this.#noPointComponent);
+    remove(this.#tripComponent);
+    remove(this.#sortComponent);
+
+    this.#currentSortType = SortType.DAY;
   };
 
   #renderPage = () => {

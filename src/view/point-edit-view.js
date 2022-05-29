@@ -207,6 +207,7 @@ export default class PointEditView extends AbstractStatefulView {
   #allDestinations = null;
   #offersByAllTypes = null;
   #offersByType = null;
+  #point = null;
 
   #startDatePicker = null;
   #endDatePicker = null;
@@ -216,7 +217,8 @@ export default class PointEditView extends AbstractStatefulView {
     this.#allDestinations = allDestinations;
     this.#offersByAllTypes = offersByAllTypes;
     this.#offersByType = offersByType;
-    this._state = PointEditView.convertPointToState(point);
+    this.#point = {...point, destination: {...point.destination}};
+    this._state = PointEditView.convertPointToState(this.#point);
 
     this.#setInnerHandlers();
     this.#setStartDatePicker();
@@ -240,6 +242,16 @@ export default class PointEditView extends AbstractStatefulView {
   setRollupButtonClickHandler = (callback) => {
     this._callback.click = callback;
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this._callback.click);
+  };
+
+  setDeleteClickHandler = (callback) => {
+    this._callback.deleteClick = callback;
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#formDeleteClickHandler);
+  };
+
+  #formDeleteClickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.deleteClick(PointEditView.convertStateToPoint(this._state));
   };
 
   removeElement = () => {
@@ -388,6 +400,7 @@ export default class PointEditView extends AbstractStatefulView {
     this.#setEndDatePicker();
     this.setFormSubmitHandler(this._callback.formSubmit);
     this.setRollupButtonClickHandler(this._callback.click);
+    this.setDeleteClickHandler(this._callback.deleteClick);
   };
 
   static convertPointToState = (point) => ({...point,

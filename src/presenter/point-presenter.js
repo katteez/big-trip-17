@@ -44,8 +44,9 @@ export default class PointPresenter {
 
     this.#pointComponent.setEditClickHandler(this.#handleEditClick);
     this.#pointComponent.setFavoriteClickHandler(this.#handleFavoriteClick);
-    this.#pointEditComponent.setRollupButtonClickHandler(this.#handleClick);
+    this.#pointEditComponent.setRollupButtonClickHandler(this.#handleEditCloseClick);
     this.#pointEditComponent.setFormSubmitHandler(this.#handleFormSubmit);
+    this.#pointEditComponent.setDeleteClickHandler(this.#handleDeleteClick);
 
     if (!prevPointComponent || !prevPointEditComponent) {
       render(this.#pointComponent, this.#pointListContainer);
@@ -115,7 +116,7 @@ export default class PointPresenter {
   };
 
   // Обработчик для закрытия формы редактирования
-  #handleClick = () => {
+  #handleEditCloseClick = () => {
     this.#pointEditComponent.reset(this.#point);
     this.#replaceFormToPoint();
   };
@@ -145,5 +146,14 @@ export default class PointPresenter {
       updatedPoint,
     );
     this.#replaceFormToPoint();
+  };
+
+  // Обработчик для удаления точки маршрута
+  #handleDeleteClick = (pointToDelete) => {
+    this.#changeData(
+      UserAction.DELETE_POINT,
+      UpdateType.MAJOR,
+      pointToDelete,
+    );
   };
 }

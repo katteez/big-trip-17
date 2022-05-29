@@ -33,16 +33,16 @@ export default class PointsModel extends Observable {
     this._notify(updateType, updatedPoint);
   };
 
-  deletePoint = (updateType, deletedPoint) => {
-    const deletedPointIndex = this.#points.findIndex((point) => point.id === deletedPoint.id);
+  deletePoint = (updateType, pointToDelete) => {
+    const pointToDeleteIndex = this.#points.findIndex((point) => point.id === pointToDelete.id);
 
-    if (deletedPointIndex === -1) {
+    if (pointToDeleteIndex === -1) {
       throw new Error('Can\'t delete non-existent point');
     }
 
     this.#points = [
-      ...this.#points.slice(0, deletedPointIndex),
-      ...this.#points.slice(deletedPointIndex + 1),
+      ...this.#points.slice(0, pointToDeleteIndex),
+      ...this.#points.slice(pointToDeleteIndex + 1),
     ];
 
     this._notify(updateType);
