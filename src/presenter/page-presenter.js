@@ -3,7 +3,7 @@ import PointsModel from '../model/points-model.js';
 import OffersModel from '../model/offers-model.js';
 import DestinationsModel from '../model/destinations-model.js';
 import FilterModel from '../model/filter-model.js';
-import { TextForNoPointView, SortType, UserAction, UpdateType } from '../const.js';
+import { FilterType, SortType, UserAction, UpdateType } from '../const.js';
 import TripView from '../view/trip-view.js';
 import SortView from '../view/sort-view.js';
 import PointListView from '../view/point-list-view.js';
@@ -25,6 +25,7 @@ export default class PagePresenter {
   #destinations = [...this.#destinationsModel.destinations];
   #filterModel = new FilterModel();
 
+  #filterType = FilterType.EVERYTHING;
   #currentSortType = SortType.DAY;
   #pointPresenterMap = new Map();
 
@@ -43,9 +44,9 @@ export default class PagePresenter {
   }
 
   get points() {
-    const filterType = this.#filterModel.filter;
+    this.#filterType = this.#filterModel.filter;
     const points = this.#pointsModel.points;
-    const filteredPoints = filter[filterType](points);
+    const filteredPoints = filter[this.#filterType](points);
 
     switch (this.#currentSortType) {
       case SortType.DAY:
@@ -75,7 +76,7 @@ export default class PagePresenter {
 
   // 'Отсутствие точек маршрута'
   #renderNoPoints = () => {
-    this.#noPointComponent = new NoPointView(TextForNoPointView['everything']);
+    this.#noPointComponent = new NoPointView(this.#filterType);
     render(this.#noPointComponent, this.#pointListComponent.element);
   };
 
@@ -162,9 +163,12 @@ export default class PagePresenter {
   #clearPage = () => {
     this.#clearPointList();
 
-    remove(this.#noPointComponent);
     remove(this.#tripComponent);
     remove(this.#sortComponent);
+
+    if (this.#noPointComponent) {
+      remove(this.#noPointComponent);
+    }
   };
 
   #renderPage = () => {

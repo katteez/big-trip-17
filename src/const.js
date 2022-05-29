@@ -22,12 +22,6 @@ const FilterType = {
   PAST: 'past',
 };
 
-const TextForNoPointView = {
-  [FilterType.EVERYTHING]: 'Click New Event to create your first point',
-  [FilterType.FUTURE]: 'There are no future events now',
-  [FilterType.PAST]: 'There are no past events now',
-};
-
 const SortType = {
   DAY: 'day',
   EVENT: 'event',
@@ -47,4 +41,4 @@ const UpdateType = {
   MAJOR: 'MAJOR',
 };
 
-export { TYPES, DESTINATIONS, SENTENCES, FilterType, TextForNoPointView, SortType, UserAction, UpdateType };
+export { TYPES, DESTINATIONS, SENTENCES, FilterType, SortType, UserAction, UpdateType };
