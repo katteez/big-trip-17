@@ -2,14 +2,15 @@ import { RenderPosition, render, remove } from '../framework/render.js';
 import PointsModel from '../model/points-model.js';
 import OffersModel from '../model/offers-model.js';
 import DestinationsModel from '../model/destinations-model.js';
-import { generateFilter } from '../mock/filter.js';
-import { FilterType, TextForNoPointView, SortType, UserAction, UpdateType } from '../const.js';
-import FilterView from '../view/filter-view.js';
+import FilterModel from '../model/filter-model.js';
+import { TextForNoPointView, SortType, UserAction, UpdateType } from '../const.js';
 import TripView from '../view/trip-view.js';
 import SortView from '../view/sort-view.js';
 import PointListView from '../view/point-list-view.js';
 import NoPointView from '../view/no-point-view.js';
 import PointPresenter from './point-presenter.js';
+import FilterPresenter from './filter-presenter.js';
+import { filter } from '../utils/filter.js';
 import { sortDayUp, sortEventTypeUp, sortTimeDown, sortPriceDown } from '../utils/sort.js';
 
 export default class PagePresenter {
@@ -22,14 +23,13 @@ export default class PagePresenter {
   #offers = [...this.#offersModel.offers];
   #destinationsModel = new DestinationsModel();
   #destinations = [...this.#destinationsModel.destinations];
+  #filterModel = new FilterModel();
 
   #currentSortType = SortType.DAY;
-  #filters = generateFilter(this.points);
   #pointPresenterMap = new Map();
 
-  #filterComponent = new FilterView(this.#filters);
   #pointListComponent = new PointListView();
-  #noPointComponent = new NoPointView(TextForNoPointView[FilterType.EVERYTHING]);
+  #noPointComponent = null;
   #tripComponent = null;
   #sortComponent = null;
 
@@ -39,30 +39,33 @@ export default class PagePresenter {
     this.#pointListContainer = pointListContainer;
 
     this.#pointsModel.addObserver(this.#handleModelEvent);
+    this.#filterModel.addObserver(this.#handleModelEvent);
   }
 
   get points() {
+    const filterType = this.#filterModel.filter;
+    const points = this.#pointsModel.points;
+    const filteredPoints = filter[filterType](points);
+
     switch (this.#currentSortType) {
       case SortType.DAY:
-        return [...this.#pointsModel.points].sort(sortDayUp);
+        return filteredPoints.sort(sortDayUp);
       case SortType.EVENT:
-        return [...this.#pointsModel.points].sort(sortEventTypeUp);
+        return filteredPoints.sort(sortEventTypeUp);
       case SortType.TIME:
-        return [...this.#pointsModel.points].sort(sortTimeDown);
+        return filteredPoints.sort(sortTimeDown);
       case SortType.PRICE:
-        return [...this.#pointsModel.points].sort(sortPriceDown);
+        return filteredPoints.sort(sortPriceDown);
     }
 
-    return this.#pointsModel.points;
+    return filteredPoints;
   }
 
   init = () => {
-    this.#renderPage();
-  };
+    const filterPresenter = new FilterPresenter(this.#filterContainer, this.#filterModel, this.#pointsModel);
+    filterPresenter.init();
 
-  // 'Фильтры'
-  #renderFilter = () => {
-    render(this.#filterComponent, this.#filterContainer);
+    this.#renderPage();
   };
 
   // 'Список точек маршрута'
@@ -72,6 +75,7 @@ export default class PagePresenter {
 
   // 'Отсутствие точек маршрута'
   #renderNoPoints = () => {
+    this.#noPointComponent = new NoPointView(TextForNoPointView['everything']);
     render(this.#noPointComponent, this.#pointListComponent.element);
   };
 
@@ -114,10 +118,10 @@ export default class PagePresenter {
   };
 
   // Обработчик-наблюдатель, который реагирует на изменения модели точек маршрута
-  #handleModelEvent = (updateType, updatedPoint) => {
+  #handleModelEvent = (updateType, data) => {
     switch (updateType) {
       case UpdateType.PATCH:
-        this.#pointPresenterMap.get(updatedPoint.id).init(updatedPoint);
+        this.#pointPresenterMap.get(data.id).init(data);
         break;
       case UpdateType.MINOR:
         this.#clearPointList();
@@ -158,14 +162,12 @@ export default class PagePresenter {
   #clearPage = () => {
     this.#clearPointList();
 
-    remove(this.#filterComponent);
     remove(this.#noPointComponent);
     remove(this.#tripComponent);
     remove(this.#sortComponent);
   };
 
   #renderPage = () => {
-    this.#renderFilter();
     this.#renderPointList();
 
     if (!this.points.length) {
