@@ -276,10 +276,6 @@ export default class PointEditView extends AbstractStatefulView {
 
   // Изменение типа
   #eventTypeClickHandler = (evt) => {
-    if (evt.target.tagName !== 'INPUT') {
-      return;
-    }
-
     const newType = evt.target.value;
     this.#offersByType = findOffersByType(this.#offersByAllTypes, newType);
 
@@ -319,6 +315,7 @@ export default class PointEditView extends AbstractStatefulView {
       this.element.querySelector('#event-start-time-1'),
       {
         enableTime: true,
+        'time_24hr': true,
         dateFormat: 'd/m/Y H:i',
         defaultDate: this._state.dateFrom,
         maxDate: this._state.dateTo,
@@ -332,6 +329,7 @@ export default class PointEditView extends AbstractStatefulView {
       this.element.querySelector('#event-end-time-1'),
       {
         enableTime: true,
+        'time_24hr': true,
         dateFormat: 'd/m/Y H:i',
         defaultDate: this._state.dateTo,
         minDate: this._state.dateFrom,
@@ -343,7 +341,7 @@ export default class PointEditView extends AbstractStatefulView {
   // Изменение цены
   #priceInputHandler = (evt) => {
     const regex = new RegExp('^[0-9]+$'); // только цифры
-    let newPrice = evt.target.value;
+    let newPrice = +evt.target.value;
 
     if(!regex.test(newPrice)) {
       newPrice = '';
@@ -356,10 +354,6 @@ export default class PointEditView extends AbstractStatefulView {
 
   // Изменение доп. опций
   #offerClickHandler = (evt) => {
-    if (evt.target.tagName !== 'INPUT') {
-      return;
-    }
-
     const toAdd = evt.target.checked;
     const idStringArray = evt.target.id.split('event-offer-');
     const newOfferId = +idStringArray[idStringArray.length-1];
@@ -382,7 +376,7 @@ export default class PointEditView extends AbstractStatefulView {
 
   #setInnerHandlers = () => {
     this.element.querySelector('.event__type-list')
-      .addEventListener('click', this.#eventTypeClickHandler);
+      .addEventListener('change', this.#eventTypeClickHandler);
     this.element.querySelector('#event-destination-1')
       .addEventListener('change', this.#destinationChangeHandler);
     this.element.querySelector('#event-price-1')
@@ -390,7 +384,7 @@ export default class PointEditView extends AbstractStatefulView {
 
     if (this.#offersByType && this.#offersByType.length) {
       this.element.querySelector('.event__available-offers')
-        .addEventListener('click', this.#offerClickHandler);
+        .addEventListener('change', this.#offerClickHandler);
     }
   };
 

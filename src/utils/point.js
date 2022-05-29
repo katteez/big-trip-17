@@ -49,7 +49,7 @@ const humanizeDuration = (duration) => {
 
 const formatDateToJson = (date) => dayjs(date).toJSON();
 
-const isDatesEqual = (dateA, dateB) => (dateA === null && dateB === null) || dayjs(dateA).isSame(dateB, 'date');
+const isDatesEqual = (dateA, dateB) => (dateA === null && dateB === null) || dayjs(dateA).isSame(dateB, 'minute');
 
 const findOffersByType = (offersByAllTypes, type) => offersByAllTypes.find((offer) => offer.type === type).offers;
 
