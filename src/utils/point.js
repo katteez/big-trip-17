@@ -49,6 +49,8 @@ const humanizeDuration = (duration) => {
 
 const formatDateToJson = (date) => dayjs(date).toJSON();
 
+const isDatesEqual = (dateA, dateB) => (dateA === null && dateB === null) || dayjs(dateA).isSame(dateB, 'date');
+
 const findOffersByType = (offersByAllTypes, type) => offersByAllTypes.find((offer) => offer.type === type).offers;
 
 const findDestinationByName = (allDestinations, name) => allDestinations.find((destination) => destination.name === name);
@@ -64,6 +66,7 @@ export {
   getDuration,
   humanizeDuration,
   formatDateToJson,
+  isDatesEqual,
   findOffersByType,
   findDestinationByName,
   calculateTotalCostForPoint

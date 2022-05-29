@@ -31,7 +31,7 @@ export default class PagePresenter {
   #pointListComponent = new PointListView();
   #noPointComponent = new NoPointView(TextForNoPointView[FilterType.EVERYTHING]);
   #tripComponent = new TripView(this.points, this.#offers);
-  #sortComponent = new SortView(Object.values(SortType));
+  #sortComponent = null;
 
   constructor(tripContainer, filterContainer, pointListContainer) {
     this.#tripContainer = tripContainer;
@@ -92,8 +92,9 @@ export default class PagePresenter {
 
   // 'Сортировка'
   #renderSort = () => {
-    render(this.#sortComponent, this.#pointListComponent.element, RenderPosition.BEFOREBEGIN);
+    this.#sortComponent = new SortView(Object.values(SortType), this.#currentSortType);
     this.#sortComponent.setSortTypeChangeHandler(this.#handleSortTypeChange);
+    render(this.#sortComponent, this.#pointListComponent.element, RenderPosition.BEFOREBEGIN);
   };
 
   // Обновляем модель в зависимости от действий пользователя
@@ -135,7 +136,7 @@ export default class PagePresenter {
   #renderPoint = (point, offersByAllTypes, allDestinations) => {
     const pointPresenter = new PointPresenter(this.#pointListComponent.element,
       offersByAllTypes, allDestinations, this.#handleViewAction, this.#handleModeChange);
-    pointPresenter.init(point);
+    pointPresenter.init(point, this.#currentSortType);
 
     this.#pointPresenterMap.set(point.id, pointPresenter);
   };

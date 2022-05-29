@@ -1,8 +1,8 @@
 import { render, replace, remove } from '../framework/render.js';
-import PointEditView from '../view/point-edit-view.js';
 import PointView from '../view/point-view.js';
-import { findOffersByType } from '../utils/point.js';
-import { UserAction, UpdateType } from '../const.js';
+import PointEditView from '../view/point-edit-view.js';
+import { isDatesEqual, findOffersByType } from '../utils/point.js';
+import { SortType, UserAction, UpdateType } from '../const.js';
 
 const Mode = {
   DEFAULT: 'default',
@@ -17,6 +17,7 @@ export default class PointPresenter {
   #changeMode = null;
 
   #point = null;
+  #currentSortType = null;
   #mode = Mode.DEFAULT;
 
   #pointComponent = null;
@@ -30,8 +31,9 @@ export default class PointPresenter {
     this.#changeMode = changeMode;
   }
 
-  init = (point) => {
+  init = (point, currentSortType) => {
     this.#point = point;
+    this.#currentSortType = currentSortType;
     const offersByType = findOffersByType(this.#offersByAllTypes, point.type);
 
     const prevPointComponent = this.#pointComponent;
@@ -119,11 +121,28 @@ export default class PointPresenter {
   };
 
   // Обработчик для отправки отредактированных данных
-  #handleFormSubmit = (point) => {
+  #handleFormSubmit = (updatedPoint) => {
+    // Обновляем всю страницу, если нужно обновить данные в блоке о путешествии
+    const isMajorUpdate = this.#point.destination.name !== updatedPoint.destination.name ||
+      !isDatesEqual(this.#point.dateFrom, updatedPoint.dateFrom) ||
+      !isDatesEqual(this.#point.dateTo, updatedPoint.dateTo) ||
+      this.#point.basePrice !== updatedPoint.basePrice;
+
+    const isMinorUpdate = this.#currentSortType === SortType.EVENT &&
+     this.#point.type !== updatedPoint.type;
+
+    let updateType = UpdateType.PATCH;
+
+    if (isMajorUpdate) {
+      updateType = UpdateType.MAJOR;
+    } else if (isMinorUpdate) {
+      updateType = UpdateType.MINOR;
+    }
+
     this.#changeData(
       UserAction.UPDATE_POINT,
-      UpdateType.PATCH,
-      point,
+      updateType,
+      updatedPoint,
     );
     this.#replaceFormToPoint();
   };
