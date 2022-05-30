@@ -1,4 +1,5 @@
 import flatpickr from 'flatpickr';
+import he from 'he';
 import 'flatpickr/dist/flatpickr.min.css';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { TYPES, DESTINATIONS } from '../const.js';
@@ -164,7 +165,7 @@ const createPointEditTemplate = (offersByType, data) => {
           <label class="event__label  event__type-output" for="event-destination-1">
             ${type}
           </label>
-          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destinationName}" list="destination-list-1">
+          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${he.encode(destinationName)}" list="destination-list-1">
           <datalist id="destination-list-1">
             ${destinationsTemplate}
           </datalist>
