@@ -4,12 +4,14 @@ import OffersModel from '../model/offers-model.js';
 import DestinationsModel from '../model/destinations-model.js';
 import FilterModel from '../model/filter-model.js';
 import { FilterType, SortType, UserAction, UpdateType } from '../const.js';
-import TripView from '../view/trip-view.js';
-import SortView from '../view/sort-view.js';
+import NewPointButtonView from '../view/new-point-button-view.js';
 import PointListView from '../view/point-list-view.js';
 import NoPointView from '../view/no-point-view.js';
-import PointPresenter from './point-presenter.js';
+import TripView from '../view/trip-view.js';
+import SortView from '../view/sort-view.js';
 import FilterPresenter from './filter-presenter.js';
+import PointPresenter from './point-presenter.js';
+import PointNewPresenter from './point-new-presenter.js';
 import { filter } from '../utils/filter.js';
 import { sortDayUp, sortEventTypeUp, sortTimeDown, sortPriceDown } from '../utils/sort.js';
 
@@ -28,7 +30,9 @@ export default class PagePresenter {
   #filterType = FilterType.EVERYTHING;
   #currentSortType = SortType.DAY;
   #pointPresenterMap = new Map();
+  #pointNewPresenter = null;
 
+  #newPointButtonComponent = new NewPointButtonView();
   #pointListComponent = new PointListView();
   #noPointComponent = null;
   #tripComponent = null;
@@ -63,10 +67,31 @@ export default class PagePresenter {
   }
 
   init = () => {
+    this.#pointNewPresenter = new PointNewPresenter(this.#destinations, this.#offers,
+      this.#pointListComponent.element, this.#handleViewAction);
+
+    this.#newPointButtonComponent.setClickHandler(this.#handleNewPointButtonClick);
+    render(this.#newPointButtonComponent, this.#tripContainer);
+
     const filterPresenter = new FilterPresenter(this.#filterContainer, this.#filterModel, this.#pointsModel);
     filterPresenter.init();
 
     this.#renderPage();
+  };
+
+  #createPoint = (callback) => {
+    this.#currentSortType = SortType.DAY;
+    this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
+    this.#pointNewPresenter.init(callback);
+  };
+
+  #handleNewPointFormClose = () => {
+    this.#newPointButtonComponent.element.disabled = false;
+  };
+
+  #handleNewPointButtonClick = () => {
+    this.#newPointButtonComponent.element.disabled = true;
+    this.#createPoint(this.#handleNewPointFormClose);
   };
 
   // 'Список точек маршрута'
@@ -139,6 +164,7 @@ export default class PagePresenter {
 
   // Закрываем все формы редактирования
   #handleModeChange = () => {
+    this.#pointNewPresenter.destroy();
     this.#pointPresenterMap.forEach((presenter) => presenter.resetView());
   };
 
@@ -146,7 +172,7 @@ export default class PagePresenter {
   #renderPoint = (point, offersByAllTypes, allDestinations) => {
     const pointPresenter = new PointPresenter(this.#pointListComponent.element,
       offersByAllTypes, allDestinations, this.#handleViewAction, this.#handleModeChange);
-    pointPresenter.init(point, this.#currentSortType);
+    pointPresenter.init(point);
 
     this.#pointPresenterMap.set(point.id, pointPresenter);
   };
@@ -163,6 +189,7 @@ export default class PagePresenter {
   };
 
   #clearPage = (resetSortType) => {
+    this.#pointNewPresenter.destroy();
     this.#clearPointList();
 
     remove(this.#tripComponent);

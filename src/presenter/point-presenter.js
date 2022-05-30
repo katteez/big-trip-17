@@ -17,7 +17,6 @@ export default class PointPresenter {
   #changeMode = null;
 
   #point = null;
-  #currentSortType = null;
   #mode = Mode.DEFAULT;
 
   #pointComponent = null;
@@ -31,9 +30,8 @@ export default class PointPresenter {
     this.#changeMode = changeMode;
   }
 
-  init = (point, currentSortType) => {
+  init = (point) => {
     this.#point = point;
-    this.#currentSortType = currentSortType;
     const offersByType = findOffersByType(this.#offersByAllTypes, point.type);
 
     const prevPointComponent = this.#pointComponent;

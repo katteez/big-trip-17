@@ -4,6 +4,8 @@ import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { TYPES, DESTINATIONS } from '../const.js';
 import { humanizePointDateTime, formatDateToJson, findOffersByType, findDestinationByName } from '../utils/point.js';
 
+const DEFAULT_TYPE = TYPES[0];
+
 const BLANK_POINT = {
   basePrice: '',
   dateFrom: null,
@@ -12,7 +14,7 @@ const BLANK_POINT = {
   id: null,
   isFavorite: false,
   offers: [],
-  type: TYPES[0],
+  type: DEFAULT_TYPE,
 };
 
 // Тип маршрута в выпадающем списке
@@ -216,7 +218,7 @@ export default class PointEditView extends AbstractStatefulView {
     super();
     this.#allDestinations = allDestinations;
     this.#offersByAllTypes = offersByAllTypes;
-    this.#offersByType = offersByType;
+    this.#offersByType = offersByType ? offersByType : findOffersByType(offersByAllTypes, DEFAULT_TYPE);
     this.#point = {...point, destination: {...point.destination}};
     this._state = PointEditView.convertPointToState(this.#point);
 
@@ -241,7 +243,7 @@ export default class PointEditView extends AbstractStatefulView {
 
   setRollupButtonClickHandler = (callback) => {
     this._callback.click = callback;
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this._callback.click);
+    this.element.querySelector('.event__rollup-btn')?.addEventListener('click', this._callback.click);
   };
 
   setDeleteClickHandler = (callback) => {
@@ -398,9 +400,9 @@ export default class PointEditView extends AbstractStatefulView {
   };
 
   static convertPointToState = (point) => ({...point,
-    destinationName: point.destination ? point.destination.name : '',
-    destinationDescription: point.destination ? point.destination.description : '',
-    destinationPhotos: point.destination ? [...point.destination.pictures] : [],
+    destinationName: point.destination?.name  ? point.destination.name : '',
+    destinationDescription: point.destination?.description ? point.destination.description : '',
+    destinationPhotos: point.destination?.pictures ? [...point.destination.pictures] : [],
   });
 
   static convertStateToPoint = (state) => {
