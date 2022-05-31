@@ -1,7 +1,8 @@
 import { render, replace, remove } from '../framework/render.js';
-import PointEditView from '../view/point-edit-view.js';
 import PointView from '../view/point-view.js';
-import { findOffersByType } from '../utils/point.js';
+import PointEditView from '../view/point-edit-view.js';
+import { isDatesEqual, findOffersByType } from '../utils/point.js';
+import { UserAction, UpdateType } from '../const.js';
 
 const Mode = {
   DEFAULT: 'default',
@@ -41,8 +42,9 @@ export default class PointPresenter {
 
     this.#pointComponent.setEditClickHandler(this.#handleEditClick);
     this.#pointComponent.setFavoriteClickHandler(this.#handleFavoriteClick);
-    this.#pointEditComponent.setRollupButtonClickHandler(this.#handleClick);
+    this.#pointEditComponent.setRollupButtonClickHandler(this.#handleEditCloseClick);
     this.#pointEditComponent.setFormSubmitHandler(this.#handleFormSubmit);
+    this.#pointEditComponent.setDeleteClickHandler(this.#handleDeleteClick);
 
     if (!prevPointComponent || !prevPointEditComponent) {
       render(this.#pointComponent, this.#pointListContainer);
@@ -104,18 +106,41 @@ export default class PointPresenter {
 
   // Обработчик для кнопки 'Избранное'
   #handleFavoriteClick = () => {
-    this.#changeData({...this.#point, isFavorite: !this.#point.isFavorite});
+    this.#changeData(
+      UserAction.UPDATE_POINT,
+      UpdateType.PATCH,
+      {...this.#point, isFavorite: !this.#point.isFavorite},
+    );
   };
 
   // Обработчик для закрытия формы редактирования
-  #handleClick = () => {
+  #handleEditCloseClick = () => {
     this.#pointEditComponent.reset(this.#point);
     this.#replaceFormToPoint();
   };
 
   // Обработчик для отправки отредактированных данных
-  #handleFormSubmit = (point) => {
-    this.#changeData(point);
+  #handleFormSubmit = (updatedPoint) => {
+    // Обновляем всю страницу, если нужно обновить данные в блоке о путешествии
+    const isMajorUpdate = this.#point.destination.name !== updatedPoint.destination.name ||
+      !isDatesEqual(this.#point.dateFrom, updatedPoint.dateFrom) ||
+      !isDatesEqual(this.#point.dateTo, updatedPoint.dateTo) ||
+      this.#point.basePrice !== updatedPoint.basePrice;
+
+    this.#changeData(
+      UserAction.UPDATE_POINT,
+      isMajorUpdate ? UpdateType.MAJOR : UpdateType.MINOR,
+      updatedPoint,
+    );
     this.#replaceFormToPoint();
+  };
+
+  // Обработчик для удаления точки маршрута
+  #handleDeleteClick = (pointToDelete) => {
+    this.#changeData(
+      UserAction.DELETE_POINT,
+      UpdateType.MAJOR,
+      pointToDelete,
+    );
   };
 }

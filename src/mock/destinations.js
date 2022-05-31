@@ -30,7 +30,7 @@ const generatePictures = () => {
   return [];
 };
 
-export const destinations = DESTINATIONS.map((destination) => ({
+export const generatedDestinations = DESTINATIONS.map((destination) => ({
   name: destination,
   description: `${destination} ${generateDescription()}`,
   pictures: generatePictures(),

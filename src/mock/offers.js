@@ -1,7 +1,7 @@
 import { getRandomInteger } from '../utils/common.js';
 import { TYPES } from '../const.js';
 
-export const generateOffersByAllTypes = () => {
+const generateOffersByAllTypes = () => {
   const offers = [
     {
       'id': 1,
@@ -79,3 +79,5 @@ export const generateOffersByAllTypes = () => {
 
   return offersByAllTypes;
 };
+
+export const generatedOffersByAllTypes = generateOffersByAllTypes();

@@ -15,9 +15,4 @@ const filter = {
     || isDateInPast(point.dateFrom) && isDateInFuture(point.dateTo)),
 };
 
-export {
-  isDateSameToCurrentDate,
-  isDateInFuture,
-  isDateInPast,
-  filter
-};
+export { filter };

@@ -1,22 +1,28 @@
 import dayjs from 'dayjs';
 import { getDuration } from './point.js';
 
-// const selectedOffers = (selectedOfferIds, offersByType) => {
-//   if (offersByType && offersByType.length) {
-//     return selectedOfferIds.map((selectedOfferId) => offersByType.find((offer) => offer.id === selectedOfferId));
-//   }
+// Помещает точки маршрута без даты в конец списка
+const getWeightForNullDate = (dateA, dateB) => {
+  if (dateA === null && dateB === null) {
+    return 0;
+  }
 
-//   return [];
-// };
+  if (dateA === null) {
+    return 1;
+  }
 
-// const sortPriceDown = (pointA, pointB) => {
-//   const totalCostForPointB = calculateTotalCostForPoint(pointB.basePrice, selectedOffers(pointB.offers));
-//   const totalCostForPointA = calculateTotalCostForPoint(pointA.basePrice, selectedOffers(pointA.offers));
+  if (dateB === null) {
+    return -1;
+  }
 
-//   return totalCostForPointB - totalCostForPointA;
-// };
+  return null;
+};
 
-const sortDayUp = (pointA, pointB) => dayjs(pointA.dateFrom).diff(dayjs(pointB.dateFrom));
+const sortDayUp = (pointA, pointB) => {
+  const weight = getWeightForNullDate(pointA.dateFrom, pointB.dateFrom);
+
+  return weight ?? dayjs(pointA.dateFrom).diff(dayjs(pointB.dateFrom));
+};
 
 const sortEventTypeUp = (pointA, pointB) => {
   if (pointA.type < pointB.type) {

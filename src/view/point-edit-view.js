@@ -1,8 +1,11 @@
 import flatpickr from 'flatpickr';
+import he from 'he';
 import 'flatpickr/dist/flatpickr.min.css';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { TYPES, DESTINATIONS } from '../const.js';
-import { humanizePointDateTime, getDuration, formatDateToJson, findOffersByType, findDestinationByName } from '../utils/point.js';
+import { humanizePointDateTime, formatDateToJson, findOffersByType, findDestinationByName } from '../utils/point.js';
+
+const DEFAULT_TYPE = TYPES[0];
 
 const BLANK_POINT = {
   basePrice: '',
@@ -12,7 +15,7 @@ const BLANK_POINT = {
   id: null,
   isFavorite: false,
   offers: [],
-  type: TYPES[0],
+  type: DEFAULT_TYPE,
 };
 
 // Тип маршрута в выпадающем списке
@@ -162,7 +165,7 @@ const createPointEditTemplate = (offersByType, data) => {
           <label class="event__label  event__type-output" for="event-destination-1">
             ${type}
           </label>
-          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destinationName}" list="destination-list-1">
+          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${he.encode(destinationName)}" list="destination-list-1">
           <datalist id="destination-list-1">
             ${destinationsTemplate}
           </datalist>
@@ -207,6 +210,7 @@ export default class PointEditView extends AbstractStatefulView {
   #allDestinations = null;
   #offersByAllTypes = null;
   #offersByType = null;
+  #point = null;
 
   #startDatePicker = null;
   #endDatePicker = null;
@@ -215,8 +219,10 @@ export default class PointEditView extends AbstractStatefulView {
     super();
     this.#allDestinations = allDestinations;
     this.#offersByAllTypes = offersByAllTypes;
-    this.#offersByType = offersByType;
-    this._state = PointEditView.convertPointToState(point);
+    this.#offersByType = offersByType ? [...offersByType] : findOffersByType(offersByAllTypes, DEFAULT_TYPE);
+    this.#point = {...point, destination: {...point.destination}, offers: [...point.offers]};
+
+    this._state = this.#convertPointToState(this.#point);
 
     this.#setInnerHandlers();
     this.#setStartDatePicker();
@@ -239,7 +245,17 @@ export default class PointEditView extends AbstractStatefulView {
 
   setRollupButtonClickHandler = (callback) => {
     this._callback.click = callback;
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this._callback.click);
+    this.element.querySelector('.event__rollup-btn')?.addEventListener('click', this._callback.click);
+  };
+
+  setDeleteClickHandler = (callback) => {
+    this._callback.deleteClick = callback;
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#formDeleteClickHandler);
+  };
+
+  #formDeleteClickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.deleteClick(PointEditView.convertStateToPoint(this._state));
   };
 
   removeElement = () => {
@@ -257,23 +273,23 @@ export default class PointEditView extends AbstractStatefulView {
   };
 
   reset = (point) => {
+    this.#offersByType = findOffersByType(this.#offersByAllTypes, point.type);
+
     this.updateElement(
-      PointEditView.convertPointToState(point),
+      this.#convertPointToState(point),
     );
   };
 
   // Изменение типа
-  #eventTypeClickHandler = (evt) => {
-    if (evt.target.tagName !== 'INPUT') {
-      return;
-    }
-
+  #eventTypeChangeHandler = (evt) => {
     const newType = evt.target.value;
+    const prevSelectedOfferIds = findOffersByType(this._state.tempSelectedOfferIdsByAllTypes, newType);
+
     this.#offersByType = findOffersByType(this.#offersByAllTypes, newType);
 
     this.updateElement({
       type: newType,
-      offers: [],
+      offers: prevSelectedOfferIds,
     });
   };
 
@@ -290,29 +306,15 @@ export default class PointEditView extends AbstractStatefulView {
 
   // Изменение даты начала
   #dateFromChangeHandler = ([selectedDate]) => {
-    let newDateFrom = formatDateToJson(selectedDate);
-
-    // Если дата начала больше даты окончания
-    if (getDuration(this._state.dateTo, newDateFrom) < 0) {
-      newDateFrom = '';
-    }
-
     this.updateElement({
-      dateFrom: newDateFrom,
+      dateFrom: formatDateToJson(selectedDate),
     });
   };
 
   // Изменение даты окончания
   #dateToChangeHandler = ([selectedDate]) => {
-    let newDateTo = formatDateToJson(selectedDate);
-
-    // Если дата начала больше даты окончания
-    if (getDuration(newDateTo, this._state.dateFrom) < 0) {
-      newDateTo = '';
-    }
-
     this.updateElement({
-      dateTo: newDateTo,
+      dateTo: formatDateToJson(selectedDate),
     });
   };
 
@@ -321,8 +323,10 @@ export default class PointEditView extends AbstractStatefulView {
       this.element.querySelector('#event-start-time-1'),
       {
         enableTime: true,
+        'time_24hr': true,
         dateFormat: 'd/m/Y H:i',
         defaultDate: this._state.dateFrom,
+        maxDate: this._state.dateTo,
         onChange: this.#dateFromChangeHandler,
       },
     );
@@ -333,8 +337,10 @@ export default class PointEditView extends AbstractStatefulView {
       this.element.querySelector('#event-end-time-1'),
       {
         enableTime: true,
+        'time_24hr': true,
         dateFormat: 'd/m/Y H:i',
         defaultDate: this._state.dateTo,
+        minDate: this._state.dateFrom,
         onChange: this.#dateToChangeHandler,
       },
     );
@@ -343,7 +349,7 @@ export default class PointEditView extends AbstractStatefulView {
   // Изменение цены
   #priceInputHandler = (evt) => {
     const regex = new RegExp('^[0-9]+$'); // только цифры
-    let newPrice = evt.target.value;
+    let newPrice = +evt.target.value;
 
     if(!regex.test(newPrice)) {
       newPrice = '';
@@ -356,10 +362,6 @@ export default class PointEditView extends AbstractStatefulView {
 
   // Изменение доп. опций
   #offerClickHandler = (evt) => {
-    if (evt.target.tagName !== 'INPUT') {
-      return;
-    }
-
     const toAdd = evt.target.checked;
     const idStringArray = evt.target.id.split('event-offer-');
     const newOfferId = +idStringArray[idStringArray.length-1];
@@ -370,10 +372,11 @@ export default class PointEditView extends AbstractStatefulView {
     if (toAdd) {
       newOfferIds = [...oldOfferIds, newOfferId];
     } else {
-      const id = oldOfferIds.findIndex((offerId) => offerId === newOfferId);
-      oldOfferIds.splice(id, 1);
-      newOfferIds = oldOfferIds;
+      newOfferIds = oldOfferIds.filter((offerId) => offerId !== newOfferId);
     }
+
+    this._state.tempSelectedOfferIdsByAllTypes.find((offersByOneType) => offersByOneType.type === this._state.type)
+      .offers = newOfferIds;
 
     this._setState({
       offers: newOfferIds,
@@ -382,7 +385,7 @@ export default class PointEditView extends AbstractStatefulView {
 
   #setInnerHandlers = () => {
     this.element.querySelector('.event__type-list')
-      .addEventListener('click', this.#eventTypeClickHandler);
+      .addEventListener('change', this.#eventTypeChangeHandler);
     this.element.querySelector('#event-destination-1')
       .addEventListener('change', this.#destinationChangeHandler);
     this.element.querySelector('#event-price-1')
@@ -390,7 +393,7 @@ export default class PointEditView extends AbstractStatefulView {
 
     if (this.#offersByType && this.#offersByType.length) {
       this.element.querySelector('.event__available-offers')
-        .addEventListener('click', this.#offerClickHandler);
+        .addEventListener('change', this.#offerClickHandler);
     }
   };
 
@@ -400,12 +403,17 @@ export default class PointEditView extends AbstractStatefulView {
     this.#setEndDatePicker();
     this.setFormSubmitHandler(this._callback.formSubmit);
     this.setRollupButtonClickHandler(this._callback.click);
+    this.setDeleteClickHandler(this._callback.deleteClick);
   };
 
-  static convertPointToState = (point) => ({...point,
-    destinationName: point.destination ? point.destination.name : '',
-    destinationDescription: point.destination ? point.destination.description : '',
-    destinationPhotos: point.destination ? [...point.destination.pictures] : [],
+  #convertPointToState = (point) => ({...point,
+    destinationName: point.destination?.name  ? point.destination.name : '',
+    destinationDescription: point.destination?.description ? point.destination.description : '',
+    destinationPhotos: point.destination?.pictures ? [...point.destination.pictures] : [],
+    tempSelectedOfferIdsByAllTypes : this.#offersByAllTypes.map((offersByOneType) => (
+      {...offersByOneType,
+        offers: offersByOneType.type === point.type ? [...point.offers] : []}
+    )),
   });
 
   static convertStateToPoint = (state) => {
@@ -414,10 +422,12 @@ export default class PointEditView extends AbstractStatefulView {
     point.destination.name = point.destinationName;
     point.destination.description = point.destinationDescription;
     point.destination.pictures = [...point.destinationPhotos];
+    point.offers = findOffersByType(point.tempSelectedOfferIdsByAllTypes, point.type);
 
     delete point.destinationName;
     delete point.destinationDescription;
     delete point.destinationPhotos;
+    delete point.tempSelectedOfferIdsByAllTypes;
 
     return point;
   };
