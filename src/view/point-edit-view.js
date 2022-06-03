@@ -327,7 +327,7 @@ export default class PointEditView extends AbstractStatefulView {
         dateFormat: 'd/m/Y H:i',
         defaultDate: this._state.dateFrom,
         maxDate: this._state.dateTo,
-        onChange: this.#dateFromChangeHandler,
+        onClose: this.#dateFromChangeHandler,
       },
     );
   };
@@ -341,7 +341,7 @@ export default class PointEditView extends AbstractStatefulView {
         dateFormat: 'd/m/Y H:i',
         defaultDate: this._state.dateTo,
         minDate: this._state.dateFrom,
-        onChange: this.#dateToChangeHandler,
+        onClose: this.#dateToChangeHandler,
       },
     );
   };
