@@ -88,7 +88,7 @@ const createPointEditViewEventPhotoTemplate = (photo) => (
 
 // Контейнер с фотографиями пункта назначения
 const createPointEditViewPhotosContainerTemplate = (photos) => {
-  if(photos && photos.length) {
+  if (photos && photos.length) {
     const eventPhotosTemplate = photos.map((photo) => createPointEditViewEventPhotoTemplate(photo)).join('');
 
     return (
@@ -105,7 +105,7 @@ const createPointEditViewPhotosContainerTemplate = (photos) => {
 
 // Секция с описанием пункта назначения
 const createPointEditViewDestinationSectionTemplate = (description, photos) => {
-  if(description) {
+  if (description) {
     const photosContainerTemplate = createPointEditViewPhotosContainerTemplate(photos);
 
     return (
@@ -351,7 +351,7 @@ export default class PointEditView extends AbstractStatefulView {
     const regex = new RegExp('^[0-9]+$'); // только цифры
     let newPrice = +evt.target.value;
 
-    if(!regex.test(newPrice)) {
+    if (!regex.test(newPrice)) {
       newPrice = '';
     }
 

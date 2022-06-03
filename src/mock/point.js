@@ -50,7 +50,7 @@ const generateOfferIds = (offersByAllTypes) => {
       const isNecessaryToAdd = Boolean(getRandomInteger(0, 1));
 
       // Рандомно добавляем id некоторых опций в опции точки маршрута
-      if(isNecessaryToAdd) {
+      if (isNecessaryToAdd) {
         randomOfferIds.push(offer.id);
       }
     }
