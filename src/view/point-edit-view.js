@@ -348,10 +348,9 @@ export default class PointEditView extends AbstractStatefulView {
 
   // Изменение цены
   #priceInputHandler = (evt) => {
-    const regex = new RegExp('^[0-9]+$'); // только цифры
     let newPrice = Math.round(evt.target.value);
 
-    if (!regex.test(newPrice)) {
+    if (isNaN(newPrice)) {
       newPrice = '';
     }
 
