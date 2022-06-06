@@ -11,9 +11,7 @@ const createTripTemplate = (points, offersByAllTypes) => {
   let totalCostForTrip = 0;
 
   for (const point of points) {
-    if (tripDestinations.indexOf(point.destination.name) === -1) {
-      tripDestinations.push(point.destination.name);
-    }
+    tripDestinations.push(point.destination.name);
 
     const offersByType = findOffersByType(offersByAllTypes, point.type);
     const selectedOffers = point.offers.map((selectedOfferId) => offersByType.find((offer) => offer.id === selectedOfferId));
