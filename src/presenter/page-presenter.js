@@ -1,9 +1,11 @@
 import { RenderPosition, render, remove } from '../framework/render.js';
-import PointsModel from '../model/points-model.js';
+import PointsApiService from '../points-api-service.js';
 import OffersModel from '../model/offers-model.js';
 import DestinationsModel from '../model/destinations-model.js';
+import PointsModel from '../model/points-model.js';
 import FilterModel from '../model/filter-model.js';
 import { FilterType, SortType, UserAction, UpdateType } from '../const.js';
+import LoadingView from '../view/loading-view.js';
 import NewPointButtonView from '../view/new-point-button-view.js';
 import PointListView from '../view/point-list-view.js';
 import NoPointView from '../view/no-point-view.js';
@@ -19,29 +21,42 @@ export default class PagePresenter {
   #tripContainer = null;
   #filterContainer = null;
   #pointListContainer = null;
+  #endPoint = null;
+  #authorization = null;
 
-  #pointsModel = new PointsModel();
-  #offersModel = new OffersModel();
-  #offers = [...this.#offersModel.offers];
-  #destinationsModel = new DestinationsModel();
-  #destinations = [...this.#destinationsModel.destinations];
+  #pointsApiService = null;
+  #offersModel = null;
+  #offers = null;
+  #destinationsModel = null;
+  #destinations = null;
+  #pointsModel = null;
   #filterModel = new FilterModel();
 
+  #isLoading = true;
   #filterType = FilterType.EVERYTHING;
   #currentSortType = SortType.DAY;
   #pointPresenterMap = new Map();
   #pointNewPresenter = null;
 
-  #newPointButtonComponent = new NewPointButtonView();
-  #pointListComponent = new PointListView();
+  #loadingComponent = new LoadingView();
+  #newPointButtonComponent = null;
   #noPointComponent = null;
+  #pointListComponent = new PointListView();
   #tripComponent = null;
   #sortComponent = null;
 
-  constructor(tripContainer, filterContainer, pointListContainer) {
+  constructor(tripContainer, filterContainer, pointListContainer, endPoint, authorization) {
     this.#tripContainer = tripContainer;
     this.#filterContainer = filterContainer;
     this.#pointListContainer = pointListContainer;
+    this.#endPoint = endPoint;
+    this.#authorization = authorization;
+
+    this.#pointsApiService = new PointsApiService(this.#endPoint, this.#authorization);
+
+    this.#offersModel = new OffersModel(this.#pointsApiService);
+    this.#destinationsModel = new DestinationsModel(this.#pointsApiService);
+    this.#pointsModel = new PointsModel(this.#pointsApiService);
 
     this.#pointsModel.addObserver(this.#handleModelEvent);
     this.#filterModel.addObserver(this.#handleModelEvent);
@@ -67,16 +82,25 @@ export default class PagePresenter {
   }
 
   init = () => {
-    this.#pointNewPresenter = new PointNewPresenter(this.#destinations, this.#offers,
-      this.#pointListComponent.element, this.#handleViewAction);
+    this.#loadData().finally(() => {
+      this.#pointNewPresenter = new PointNewPresenter(this.#destinations, this.#offers,
+        this.#pointListComponent.element, this.#handleViewAction);
 
-    this.#newPointButtonComponent.setClickHandler(this.#handleNewPointButtonClick);
-    render(this.#newPointButtonComponent, this.#tripContainer);
+      const filterPresenter = new FilterPresenter(this.#filterContainer, this.#filterModel, this.#pointsModel);
+      filterPresenter.init();
 
-    const filterPresenter = new FilterPresenter(this.#filterContainer, this.#filterModel, this.#pointsModel);
-    filterPresenter.init();
+      this.#renderPage();
+    });
+  };
 
-    this.#renderPage();
+  #loadData = async () => {
+    await this.#offersModel.init();
+    this.#offers = [...this.#offersModel.offers];
+
+    await this.#destinationsModel.init();
+    this.#destinations = [...this.#destinationsModel.destinations];
+
+    this.#pointsModel.init();
   };
 
   #createPoint = (callback) => {
@@ -94,15 +118,27 @@ export default class PagePresenter {
     this.#createPoint(this.#handleNewPointFormClose);
   };
 
-  // 'Список точек маршрута'
-  #renderPointList = () => {
-    render(this.#pointListComponent, this.#pointListContainer);
+  // 'Кнопка создания новой точки'
+  #renderNewPointButton = () => {
+    this.#newPointButtonComponent = new NewPointButtonView(this.#isLoading);
+    this.#newPointButtonComponent.setClickHandler(this.#handleNewPointButtonClick);
+    render(this.#newPointButtonComponent, this.#tripContainer);
+  };
+
+  // 'Заглушка, пока грузятся данные'
+  #renderLoading = () => {
+    render(this.#loadingComponent, this.#pointListContainer);
   };
 
   // 'Отсутствие точек маршрута'
   #renderNoPoints = () => {
     this.#noPointComponent = new NoPointView(this.#filterType);
-    render(this.#noPointComponent, this.#pointListComponent.element);
+    render(this.#noPointComponent, this.#pointListContainer);
+  };
+
+  // 'Список точек маршрута'
+  #renderPointList = () => {
+    render(this.#pointListComponent, this.#pointListContainer);
   };
 
   // 'Путешествие'
@@ -159,6 +195,12 @@ export default class PagePresenter {
         this.#clearPage(resetSortType);
         this.#renderPage();
         break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#clearPage();
+        this.#renderPage();
+        break;
     }
   };
 
@@ -192,8 +234,16 @@ export default class PagePresenter {
     this.#pointNewPresenter.destroy();
     this.#clearPointList();
 
-    remove(this.#tripComponent);
-    remove(this.#sortComponent);
+    remove(this.#newPointButtonComponent);
+    remove(this.#loadingComponent);
+
+    if (this.#tripComponent) {
+      remove(this.#tripComponent);
+    }
+
+    if (this.#sortComponent) {
+      remove(this.#sortComponent);
+    }
 
     if (this.#noPointComponent) {
       remove(this.#noPointComponent);
@@ -205,7 +255,12 @@ export default class PagePresenter {
   };
 
   #renderPage = () => {
-    this.#renderPointList();
+    this.#renderNewPointButton();
+
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
 
     if (!this.points.length) {
       this.#renderNoPoints();
@@ -213,6 +268,7 @@ export default class PagePresenter {
     }
 
     this.#renderTrip();
+    this.#renderPointList();
     this.#renderSort();
     this.#renderPoints();
   };

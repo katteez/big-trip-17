@@ -1,9 +1,20 @@
-import { generatedOffersByAllTypes } from '../mock/offers.js';
-
 export default class OffersModel {
-  #offers = generatedOffersByAllTypes;
+  #pointsApiService = null;
+  #offers = [];
+
+  constructor(pointsApiService) {
+    this.#pointsApiService = pointsApiService;
+  }
 
   get offers() {
     return this.#offers;
   }
+
+  init = async () => {
+    try {
+      this.#offers = await this.#pointsApiService.offers;
+    } catch(err) {
+      this.#offers = [];
+    }
+  };
 }

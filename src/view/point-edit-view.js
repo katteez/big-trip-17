@@ -1,11 +1,10 @@
 import flatpickr from 'flatpickr';
-import he from 'he';
 import 'flatpickr/dist/flatpickr.min.css';
+import he from 'he';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
-import { TYPES, DESTINATIONS } from '../const.js';
-import { humanizePointDateTime, formatDateToJson, findOffersByType, findDestinationByName } from '../utils/point.js';
+import { humanizePointDateTime, findOffersByType, findDestinationByName } from '../utils/point.js';
 
-const DEFAULT_TYPE = TYPES[0];
+const DEFAULT_TYPE = 'taxi';
 
 const BLANK_POINT = {
   basePrice: '',
@@ -19,19 +18,23 @@ const BLANK_POINT = {
 };
 
 // Тип маршрута в выпадающем списке
-const createPointEditViewEventTypeListTemplate = (currentType) => TYPES.map((type) => (
-  `<div class="event__type-item">
-    <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type"
-      value="${type}"
-      ${currentType === type ? 'checked' : ''}
-      >
-    <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-1">${type}</label>
-  </div>`
-)).join('');
+const createPointEditViewEventTypeListTemplate = (offersByAllTypes, currentType) => offersByAllTypes.map((offersByOneType) => {
+  const type = offersByOneType.type;
+
+  return (
+    `<div class="event__type-item">
+      <input id="event-type-${type}-1" class="event__type-input  visually-hidden" type="radio" name="event-type"
+        value="${type}"
+        ${currentType === type ? 'checked' : ''}
+        >
+      <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-1">${type}</label>
+    </div>`
+  );
+}).join('');
 
 // Пункт назначения в выпадающем списке
-const createPointEditViewDestinationListTemplate = () => DESTINATIONS.map((destination) => (
-  `<option value="${destination}"></option>`
+const createPointEditViewDestinationListTemplate = (allDestinations) => allDestinations.map((destination) => (
+  `<option value="${destination.name}"></option>`
 )).join('');
 
 // Кнопка открытия/закрытия формы редактирования
@@ -88,7 +91,7 @@ const createPointEditViewEventPhotoTemplate = (photo) => (
 
 // Контейнер с фотографиями пункта назначения
 const createPointEditViewPhotosContainerTemplate = (photos) => {
-  if(photos && photos.length) {
+  if (photos && photos.length) {
     const eventPhotosTemplate = photos.map((photo) => createPointEditViewEventPhotoTemplate(photo)).join('');
 
     return (
@@ -105,7 +108,7 @@ const createPointEditViewPhotosContainerTemplate = (photos) => {
 
 // Секция с описанием пункта назначения
 const createPointEditViewDestinationSectionTemplate = (description, photos) => {
-  if(description) {
+  if (description) {
     const photosContainerTemplate = createPointEditViewPhotosContainerTemplate(photos);
 
     return (
@@ -120,7 +123,7 @@ const createPointEditViewDestinationSectionTemplate = (description, photos) => {
   return '';
 };
 
-const createPointEditTemplate = (offersByType, data) => {
+const createPointEditTemplate = (offersByAllTypes, offersByType, allDestinations, data) => {
   const {
     basePrice,
     dateFrom,
@@ -137,8 +140,8 @@ const createPointEditTemplate = (offersByType, data) => {
   const selectedOfferIds = data.offers;
   const isSubmitDisabled = !basePrice || !startTime || !endTime || !type || !destinationName;
 
-  const eventTypesTemplate = createPointEditViewEventTypeListTemplate(type);
-  const destinationsTemplate = createPointEditViewDestinationListTemplate();
+  const eventTypesTemplate = createPointEditViewEventTypeListTemplate(offersByAllTypes, type);
+  const destinationsTemplate = createPointEditViewDestinationListTemplate(allDestinations);
   const rollupButtonTemplate = createPointEditViewRollupButtonTemplate(id);
   const offersSectionTemplate = createPointEditViewOffersSectionTemplate(offersByType, selectedOfferIds);
   const destinationSectionTemplate = createPointEditViewDestinationSectionTemplate(destinationDescription, destinationPhotos);
@@ -230,7 +233,7 @@ export default class PointEditView extends AbstractStatefulView {
   }
 
   get template() {
-    return createPointEditTemplate(this.#offersByType, this._state);
+    return createPointEditTemplate(this.#offersByAllTypes, this.#offersByType, this.#allDestinations, this._state);
   }
 
   setFormSubmitHandler = (callback) => {
@@ -307,14 +310,14 @@ export default class PointEditView extends AbstractStatefulView {
   // Изменение даты начала
   #dateFromChangeHandler = ([selectedDate]) => {
     this.updateElement({
-      dateFrom: formatDateToJson(selectedDate),
+      dateFrom: selectedDate,
     });
   };
 
   // Изменение даты окончания
   #dateToChangeHandler = ([selectedDate]) => {
     this.updateElement({
-      dateTo: formatDateToJson(selectedDate),
+      dateTo: selectedDate,
     });
   };
 
@@ -327,7 +330,7 @@ export default class PointEditView extends AbstractStatefulView {
         dateFormat: 'd/m/Y H:i',
         defaultDate: this._state.dateFrom,
         maxDate: this._state.dateTo,
-        onChange: this.#dateFromChangeHandler,
+        onClose: this.#dateFromChangeHandler,
       },
     );
   };
@@ -341,17 +344,16 @@ export default class PointEditView extends AbstractStatefulView {
         dateFormat: 'd/m/Y H:i',
         defaultDate: this._state.dateTo,
         minDate: this._state.dateFrom,
-        onChange: this.#dateToChangeHandler,
+        onClose: this.#dateToChangeHandler,
       },
     );
   };
 
   // Изменение цены
   #priceInputHandler = (evt) => {
-    const regex = new RegExp('^[0-9]+$'); // только цифры
-    let newPrice = +evt.target.value;
+    let newPrice = Math.round(evt.target.value);
 
-    if(!regex.test(newPrice)) {
+    if (isNaN(newPrice)) {
       newPrice = '';
     }
 
