@@ -15,6 +15,7 @@ export default class DestinationsModel {
       this.#destinations = await this.#pointsApiService.destinations;
     } catch(err) {
       this.#destinations = [];
+      throw new Error(`Can't get destinations: ${err.message}`);
     }
   };
 }

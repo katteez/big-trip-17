@@ -55,6 +55,19 @@ export default class PointNewPresenter {
     });
   };
 
+  // Если в процессе запроса на сервер произошла ошибка, трясем форму и разблокируем ее
+  setAborting = () => {
+    const resetFormState = () => {
+      this.#pointEditComponent.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#pointEditComponent.shake(resetFormState);
+  };
+
   // Обработчик для отправки созданных данных
   #handleFormSubmit = (newPoint) => {
     this.#changeData(

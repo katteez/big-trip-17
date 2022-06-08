@@ -97,6 +97,26 @@ export default class PointPresenter {
     }
   };
 
+  // Если в процессе запроса на сервер произошла ошибка...
+  setAborting = () => {
+    // ...трясем компонент просмотра
+    if (this.#mode === Mode.DEFAULT) {
+      this.#pointComponent.shake();
+      return;
+    }
+
+    const resetFormState = () => {
+      this.#pointEditComponent.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    // ...трясем форму и разблокируем ее
+    this.#pointEditComponent.shake(resetFormState);
+  };
+
   // Открываем форму редактирования
   #replacePointToForm = () => {
     this.#changeMode();

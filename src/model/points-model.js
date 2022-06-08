@@ -20,6 +20,7 @@ export default class PointsModel extends Observable {
       this.#points = points.map(this.#adaptToClient);
     } catch(err) {
       this.#points = [];
+      throw new Error(`Can't get points: ${err.message}`);
     }
 
     this._notify(UpdateType.INIT);
@@ -44,7 +45,7 @@ export default class PointsModel extends Observable {
 
       this._notify(updateType, updatedPoint);
     } catch(err) {
-      throw new Error('Can\'t update point');
+      throw new Error(`Can't update point: ${err.message}`);
     }
   };
 
@@ -56,7 +57,7 @@ export default class PointsModel extends Observable {
       this.#points = [newPoint, ...this.#points];
       this._notify(updateType, newPoint);
     } catch(err) {
-      throw new Error('Can\'t add point');
+      throw new Error(`Can't add point: ${err.message}`);
     }
   };
 
@@ -67,7 +68,7 @@ export default class PointsModel extends Observable {
       this.#points = this.#points.filter((point) => point.id !== pointToDelete.id);
       this._notify(updateType);
     } catch(err) {
-      throw new Error('Can\'t delete point');
+      throw new Error(`Can't delete point: ${err.message}`);
     }
   };
 
