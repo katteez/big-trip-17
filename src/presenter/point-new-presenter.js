@@ -39,23 +39,32 @@ export default class PointNewPresenter {
       return;
     }
 
-    this.#destroyCallback?.();
-
     remove(this.#pointEditComponent);
     this.#pointEditComponent = null;
+
+    this.#destroyCallback?.();
 
     document.removeEventListener('keydown', this.#escKeyDownHandler);
   };
 
+  // Блокируем форму во время отправки данных на сервер при добавлении точки
+  setSaving = () => {
+    this.#pointEditComponent.updateElement({
+      isDisabled: true,
+      isSaving: true,
+    });
+  };
+
+  // Обработчик для отправки созданных данных
   #handleFormSubmit = (newPoint) => {
     this.#changeData(
       UserAction.ADD_POINT,
       UpdateType.MAJOR,
       newPoint,
     );
-    this.destroy();
   };
 
+  // Обработчик для удаления точки маршрута
   #handleDeleteClick = () => {
     this.destroy();
   };

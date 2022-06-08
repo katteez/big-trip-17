@@ -462,6 +462,10 @@ main {
           user-select: none;
   cursor: pointer; }
 
+.event__type-btn.disabled {
+  background-color: rgba(239, 239, 239);
+  cursor: default; }
+
 .event__type-icon {
   display: block;
   width: 17px;
@@ -625,6 +629,8 @@ main {
     transition: border-color 0.2s, transform 0.6s, -webkit-transform 0.6s; }
   .event__rollup-btn:hover::after {
     border-color: #0d8ae4; }
+  .event__rollup-btn:disabled {
+    cursor: default; }
 
 .event--edit .event__rollup-btn {
   margin-left: auto; }
@@ -649,6 +655,8 @@ main {
   cursor: pointer; }
   .event__label::first-letter {
     text-transform: capitalize; }
+  .event__label.disabled {
+    cursor: default; }
 
 .event__input {
   -ms-flex-positive: 1;
@@ -668,6 +676,8 @@ main {
   .event__input--time {
     width: 130px;
     text-align: center; }
+  .event__input--time.event__input:disabled {
+    cursor: default; }
   .event__input--price {
     width: 66px; }
 
@@ -695,6 +705,9 @@ main {
     opacity: 0.8; }
   .event__reset-btn:active {
     opacity: 0.6; }
+  .event__reset-btn:disabled {
+    opacity: 0.46;
+    cursor: default; }
 
 .event__favorite-btn {
   margin: 0 10px;
@@ -799,7 +812,13 @@ main {
   .event__offer-label::first-letter {
     text-transform: capitalize; }
 
-.event__offer-checkbox:checked + .event__offer-label {
+.event__offer-checkbox:disabled + .event__offer-label {
+  cursor: default; }
+.event__offer-checkbox:disabled + .event__offer-label:hover {
+  background-color: #f2f2f2; }
+
+.event__offer-checkbox:checked + .event__offer-label,
+.event__offer-checkbox:checked:disabled + .event__offer-label:hover {
   background-color: #0d8ae4; }
 
 .event__destination-description {
