@@ -89,7 +89,7 @@ export default class PagePresenter {
       const filterPresenter = new FilterPresenter(this.#filterContainer, this.#filterModel, this.#pointsModel);
       filterPresenter.init();
 
-      this.#renderPage();
+      this.#renderPage({rerenderNewPointButton: true});
     });
   };
 
@@ -192,14 +192,14 @@ export default class PagePresenter {
         this.#renderPoints();
         break;
       case UpdateType.MAJOR:
-        this.#clearPage(resetSortType);
+        this.#clearPage({resetSortType});
         this.#renderPage();
         break;
       case UpdateType.INIT:
         this.#isLoading = false;
         remove(this.#loadingComponent);
-        this.#clearPage();
-        this.#renderPage();
+        this.#clearPage({rerenderNewPointButton: true});
+        this.#renderPage({rerenderNewPointButton: true});
         break;
     }
   };
@@ -230,11 +230,14 @@ export default class PagePresenter {
     this.#pointPresenterMap.clear();
   };
 
-  #clearPage = (resetSortType) => {
+  #clearPage = ({rerenderNewPointButton = false, resetSortType = false} = {}) => {
     this.#pointNewPresenter.destroy();
     this.#clearPointList();
 
-    remove(this.#newPointButtonComponent);
+    if (rerenderNewPointButton) {
+      remove(this.#newPointButtonComponent);
+    }
+
     remove(this.#loadingComponent);
 
     if (this.#tripComponent) {
@@ -254,8 +257,10 @@ export default class PagePresenter {
     }
   };
 
-  #renderPage = () => {
-    this.#renderNewPointButton();
+  #renderPage = ({rerenderNewPointButton = false} = {}) => {
+    if (rerenderNewPointButton) {
+      this.#renderNewPointButton();
+    }
 
     if (this.#isLoading) {
       this.#renderLoading();
