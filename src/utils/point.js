@@ -8,7 +8,16 @@ const humanizePointTimeForAttribute = (date) => date ? dayjs(date).format('YYYY-
 
 const humanizePointDateTime = (date) => date ? dayjs(date).format('DD/MM/YY HH:mm') : '';
 
-const getDuration = (dateTo, dateFrom) => dateTo && dateFrom ? dayjs(dateTo).diff(dayjs(dateFrom)) : '';
+const getDuration = (dateTo, dateFrom) => {
+  if (dateTo && dateFrom) {
+    const endDate = dayjs(dateTo).second(0).millisecond(0);
+    const startDate = dayjs(dateFrom).second(0).millisecond(0);
+
+    return dayjs(endDate).diff(dayjs(startDate));
+  }
+
+  return '';
+};
 
 const millisecondsPerSecond = 1000;
 const secondsPerMinute = 60;

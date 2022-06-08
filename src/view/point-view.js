@@ -29,15 +29,12 @@ const createPointTemplate = (offers, point) => {
   const selectedOfferIds = point.offers;
 
   const startDate = humanizePointDate(dateFrom);
-
   const startDateForAttribute = humanizePointDateForAttribute(dateFrom);
 
   const startTime = humanizePointTime(dateFrom);
-
   const startTimeForAttribute = humanizePointTimeForAttribute(dateFrom);
 
   const endTime = humanizePointTime(dateTo);
-
   const endTimeForAttribute = humanizePointTimeForAttribute(dateTo);
 
   const duration = humanizeDuration(getDuration(dateTo, dateFrom));
