@@ -1,4 +1,5 @@
 import { RenderPosition, render, remove } from '../framework/render.js';
+import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
 import PointsApiService from '../points-api-service.js';
 import OffersModel from '../model/offers-model.js';
 import DestinationsModel from '../model/destinations-model.js';
@@ -16,6 +17,11 @@ import PointPresenter from './point-presenter.js';
 import PointNewPresenter from './point-new-presenter.js';
 import { filter } from '../utils/filter.js';
 import { sortDayUp, sortEventTypeUp, sortTimeDown, sortPriceDown } from '../utils/sort.js';
+
+const UiBlockerTimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
+};
 
 export default class PagePresenter {
   #tripContainer = null;
@@ -37,6 +43,7 @@ export default class PagePresenter {
   #currentSortType = SortType.DAY;
   #pointPresenterMap = new Map();
   #pointNewPresenter = null;
+  #uiBlocker = new UiBlocker(UiBlockerTimeLimit.LOWER_LIMIT, UiBlockerTimeLimit.UPPER_LIMIT);
 
   #loadingComponent = new LoadingView();
   #newPointButtonComponent = null;
@@ -165,13 +172,15 @@ export default class PagePresenter {
   };
 
   // Обновляем модель в зависимости от действий пользователя
-  #handleViewAction = (actionType, updateType, updatedPoint) => {
+  #handleViewAction = async (actionType, updateType, updatedPoint) => {
+    this.#uiBlocker.block();
+
     switch (actionType) {
       case UserAction.UPDATE_POINT:
         this.#pointPresenterMap.get(updatedPoint.id).setSaving();
 
         try {
-          this.#pointsModel.updatePoint(updateType, updatedPoint);
+          await this.#pointsModel.updatePoint(updateType, updatedPoint);
         } catch(err) {
           this.#pointPresenterMap.get(updatedPoint.id).setAborting();
           throw err;
@@ -181,7 +190,7 @@ export default class PagePresenter {
         this.#pointNewPresenter.setSaving();
 
         try {
-          this.#pointsModel.addPoint(updateType, updatedPoint);
+          await this.#pointsModel.addPoint(updateType, updatedPoint);
         } catch(err) {
           this.#pointNewPresenter.setAborting();
           throw err;
@@ -191,13 +200,15 @@ export default class PagePresenter {
         this.#pointPresenterMap.get(updatedPoint.id).setDeleting();
 
         try {
-          this.#pointsModel.deletePoint(updateType, updatedPoint);
+          await this.#pointsModel.deletePoint(updateType, updatedPoint);
         } catch(err) {
           this.#pointPresenterMap.get(updatedPoint.id).setAborting();
           throw err;
         }
         break;
     }
+
+    this.#uiBlocker.unblock();
   };
 
   // Обработчик-наблюдатель, который реагирует на изменения модели точек маршрута
