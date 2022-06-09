@@ -1,7 +1,7 @@
 import { render, replace, remove } from '../framework/render.js';
 import PointView from '../view/point-view.js';
 import PointEditView from '../view/point-edit-view.js';
-import { isDatesEqual, findOffersByType } from '../utils/point.js';
+import { isDatesEqual, isOffersEqual, findOffersByType } from '../utils/point.js';
 import { UserAction, UpdateType } from '../const.js';
 
 const Mode = {
@@ -162,17 +162,22 @@ export default class PointPresenter {
 
   // Обработчик для отправки отредактированных данных
   #handleFormSubmit = (updatedPoint) => {
-    // Обновляем всю страницу, если нужно обновить данные в блоке о путешествии
-    const isMajorUpdate = this.#point.destination.name !== updatedPoint.destination.name ||
+    const isDataChanged = this.#point.type !== updatedPoint.type ||
+      this.#point.destination.name !== updatedPoint.destination.name ||
       !isDatesEqual(this.#point.dateFrom, updatedPoint.dateFrom) ||
       !isDatesEqual(this.#point.dateTo, updatedPoint.dateTo) ||
-      this.#point.basePrice !== updatedPoint.basePrice;
+      this.#point.basePrice !== updatedPoint.basePrice ||
+      !isOffersEqual(this.#point.offers, updatedPoint.offers);
 
-    this.#changeData(
-      UserAction.UPDATE_POINT,
-      isMajorUpdate ? UpdateType.MAJOR : UpdateType.MINOR,
-      updatedPoint,
-    );
+    if (isDataChanged) {
+      this.#changeData(
+        UserAction.UPDATE_POINT,
+        UpdateType.MAJOR,
+        updatedPoint,
+      );
+    } else {
+      this.#replaceFormToPoint();
+    }
   };
 
   // Обработчик для удаления точки маршрута

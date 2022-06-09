@@ -58,6 +58,12 @@ const humanizeDuration = (duration) => {
 
 const isDatesEqual = (dateA, dateB) => (dateA === null && dateB === null) || dayjs(dateA).isSame(dateB, 'minute');
 
+const getArraysDifference = (arrayA, arrayB) => arrayA.filter((item) => !arrayB.includes(item))
+  .concat(arrayB.filter((item)=> !arrayA.includes(item)));
+
+const isOffersEqual = (offersA, offersB) => offersA.length === offersB.length &&
+  !getArraysDifference(offersA, offersB).length;
+
 const findOffersByType = (offersByAllTypes, type) => offersByAllTypes.find((offer) => offer.type === type).offers;
 
 const findDestinationByName = (allDestinations, name) => allDestinations.find((destination) => destination.name === name);
@@ -73,6 +79,7 @@ export {
   getDuration,
   humanizeDuration,
   isDatesEqual,
+  isOffersEqual,
   findOffersByType,
   findDestinationByName,
   calculateTotalCostForPoint

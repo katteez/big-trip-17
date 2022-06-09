@@ -219,10 +219,6 @@ export default class PagePresenter {
       case UpdateType.PATCH:
         this.#pointPresenterMap.get(data.id).init(data);
         break;
-      case UpdateType.MINOR:
-        this.#clearPointList();
-        this.#renderPoints();
-        break;
       case UpdateType.MAJOR:
         this.#clearPage({resetSortType});
         this.#renderPage();
