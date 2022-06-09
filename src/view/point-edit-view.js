@@ -302,14 +302,6 @@ export default class PointEditView extends AbstractStatefulView {
     }
   };
 
-  reset = (point) => {
-    this.#offersByType = findOffersByType(this.#offersByAllTypes, point.type);
-
-    this.updateElement(
-      this.#convertPointToState(point),
-    );
-  };
-
   // Изменение типа
   #eventTypeChangeHandler = (evt) => {
     const newType = evt.target.value;

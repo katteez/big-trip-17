@@ -17,6 +17,7 @@ export default class PointPresenter {
   #changeMode = null;
 
   #point = null;
+  #offersByType = null;
   #mode = Mode.DEFAULT;
 
   #pointComponent = null;
@@ -32,21 +33,16 @@ export default class PointPresenter {
 
   init = (point) => {
     this.#point = point;
-    const offersByType = findOffersByType(this.#offersByAllTypes, point.type);
+    this.#offersByType = findOffersByType(this.#offersByAllTypes, point.type);
 
     const prevPointComponent = this.#pointComponent;
-    const prevPointEditComponent = this.#pointEditComponent;
 
-    this.#pointComponent = new PointView(offersByType, point);
-    this.#pointEditComponent = new PointEditView(this.#allDestinations, this.#offersByAllTypes, offersByType, point);
+    this.#pointComponent = new PointView(this.#offersByType, point);
 
     this.#pointComponent.setEditClickHandler(this.#handleEditClick);
     this.#pointComponent.setFavoriteClickHandler(this.#handleFavoriteClick);
-    this.#pointEditComponent.setRollupButtonClickHandler(this.#handleEditCloseClick);
-    this.#pointEditComponent.setFormSubmitHandler(this.#handleFormSubmit);
-    this.#pointEditComponent.setDeleteClickHandler(this.#handleDeleteClick);
 
-    if (!prevPointComponent || !prevPointEditComponent) {
+    if (!prevPointComponent) {
       render(this.#pointComponent, this.#pointListContainer);
       return;
     }
@@ -55,13 +51,7 @@ export default class PointPresenter {
       replace(this.#pointComponent, prevPointComponent);
     }
 
-    if (this.#mode === Mode.EDITING) {
-      replace(this.#pointComponent, prevPointEditComponent);
-      this.#mode = Mode.DEFAULT;
-    }
-
     remove(prevPointComponent);
-    remove(prevPointEditComponent);
   };
 
   destroy = () => {
@@ -73,11 +63,13 @@ export default class PointPresenter {
     document.removeEventListener('keydown', this.#escKeyDownHandler);
   };
 
-  // Для закрытия всех форм редактирования из PagePresenter
+  // Закрываем форму редактирования
   resetView = () => {
     if (this.#mode !== Mode.DEFAULT) {
-      this.#pointEditComponent.reset(this.#point);
       this.#replaceFormToPoint();
+
+      remove(this.#pointEditComponent);
+      this.#pointEditComponent = null;
     }
   };
 
@@ -121,7 +113,7 @@ export default class PointPresenter {
     this.#pointEditComponent.shake(resetFormState);
   };
 
-  // Открываем форму редактирования
+  // Заменяем форму просмотра на форму редактирования
   #replacePointToForm = () => {
     this.#changeMode();
     replace(this.#pointEditComponent, this.#pointComponent);
@@ -129,7 +121,7 @@ export default class PointPresenter {
     this.#mode = Mode.EDITING;
   };
 
-  // Закрываем форму редактирования
+  // Заменяем форму редактирования на форму просмотра
   #replaceFormToPoint = () => {
     replace(this.#pointComponent, this.#pointEditComponent);
     document.removeEventListener('keydown', this.#escKeyDownHandler);
@@ -139,13 +131,18 @@ export default class PointPresenter {
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();
-      this.#pointEditComponent.reset(this.#point);
-      this.#replaceFormToPoint();
+      this.resetView();
     }
   };
 
   // Обработчик для открытия формы редактирования
   #handleEditClick = () => {
+    this.#pointEditComponent = new PointEditView(this.#allDestinations, this.#offersByAllTypes, this.#offersByType, this.#point);
+
+    this.#pointEditComponent.setRollupButtonClickHandler(this.#handleRollupButtonClick);
+    this.#pointEditComponent.setFormSubmitHandler(this.#handleFormSubmit);
+    this.#pointEditComponent.setDeleteClickHandler(this.#handleDeleteClick);
+
     this.#replacePointToForm();
   };
 
@@ -158,10 +155,9 @@ export default class PointPresenter {
     );
   };
 
-  // Обработчик для закрытия формы редактирования
-  #handleEditCloseClick = () => {
-    this.#pointEditComponent.reset(this.#point);
-    this.#replaceFormToPoint();
+  // Обработчик для закрытия формы редактирования без сохранения
+  #handleRollupButtonClick = () => {
+    this.resetView();
   };
 
   // Обработчик для отправки отредактированных данных
