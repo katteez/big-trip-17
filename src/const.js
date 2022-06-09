@@ -5,10 +5,31 @@ const FilterType = {
 };
 
 const SortType = {
-  DAY: 'day',
-  EVENT: 'event',
-  TIME: 'time',
-  PRICE: 'price',
+  DAY: {
+    value: 'day',
+    name: 'Day',
+    isDisabled: false,
+  },
+  EVENT: {
+    value: 'event',
+    name: 'Event',
+    isDisabled: false,
+  },
+  TIME: {
+    value: 'time',
+    name: 'Time',
+    isDisabled: false,
+  },
+  PRICE: {
+    value: 'price',
+    name: 'Price',
+    isDisabled: false,
+  },
+  OFFERS: {
+    value: 'offers',
+    name: 'Offers',
+    isDisabled: true,
+  },
 };
 
 const UserAction = {

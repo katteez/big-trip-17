@@ -40,7 +40,7 @@ export default class PagePresenter {
 
   #isLoading = true;
   #filterType = FilterType.EVERYTHING;
-  #currentSortType = SortType.DAY;
+  #currentSortType = SortType.DAY.value;
   #pointPresenterMap = new Map();
   #pointNewPresenter = null;
   #uiBlocker = new UiBlocker(UiBlockerTimeLimit.LOWER_LIMIT, UiBlockerTimeLimit.UPPER_LIMIT);
@@ -75,13 +75,13 @@ export default class PagePresenter {
     const filteredPoints = filter[this.#filterType](points);
 
     switch (this.#currentSortType) {
-      case SortType.DAY:
+      case SortType.DAY.value:
         return filteredPoints.sort(sortDayUp);
-      case SortType.EVENT:
+      case SortType.EVENT.value:
         return filteredPoints.sort(sortEventTypeUp);
-      case SortType.TIME:
+      case SortType.TIME.value:
         return filteredPoints.sort(sortTimeDown);
-      case SortType.PRICE:
+      case SortType.PRICE.value:
         return filteredPoints.sort(sortPriceDown);
     }
 
@@ -111,7 +111,7 @@ export default class PagePresenter {
   };
 
   #createPoint = (callback) => {
-    this.#currentSortType = SortType.DAY;
+    this.#currentSortType = SortType.DAY.value;
     this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
     this.#pointNewPresenter.init(callback);
   };
@@ -285,7 +285,7 @@ export default class PagePresenter {
     }
 
     if (resetSortType) {
-      this.#currentSortType = SortType.DAY;
+      this.#currentSortType = SortType.DAY.value;
     }
   };
 
