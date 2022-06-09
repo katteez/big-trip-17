@@ -56,7 +56,8 @@ export default class PointPresenter {
     }
 
     if (this.#mode === Mode.EDITING) {
-      replace(this.#pointEditComponent, prevPointEditComponent);
+      replace(this.#pointComponent, prevPointEditComponent);
+      this.#mode = Mode.DEFAULT;
     }
 
     remove(prevPointComponent);
@@ -66,6 +67,10 @@ export default class PointPresenter {
   destroy = () => {
     remove(this.#pointComponent);
     remove(this.#pointEditComponent);
+    this.#pointComponent = null;
+    this.#pointEditComponent = null;
+
+    document.removeEventListener('keydown', this.#escKeyDownHandler);
   };
 
   // Для закрытия всех форм редактирования из PagePresenter
@@ -74,6 +79,46 @@ export default class PointPresenter {
       this.#pointEditComponent.reset(this.#point);
       this.#replaceFormToPoint();
     }
+  };
+
+  // Блокируем форму во время отправки данных на сервер при сохранении точки
+  setSaving = () => {
+    if (this.#mode === Mode.EDITING) {
+      this.#pointEditComponent.updateElement({
+        isDisabled: true,
+        isSaving: true,
+      });
+    }
+  };
+
+  // Блокируем форму во время отправки данных на сервер при удалении точки
+  setDeleting = () => {
+    if (this.#mode === Mode.EDITING) {
+      this.#pointEditComponent.updateElement({
+        isDisabled: true,
+        isDeleting: true,
+      });
+    }
+  };
+
+  // Если в процессе запроса на сервер произошла ошибка...
+  setAborting = () => {
+    // ...трясем компонент просмотра
+    if (this.#mode === Mode.DEFAULT) {
+      this.#pointComponent.shake();
+      return;
+    }
+
+    const resetFormState = () => {
+      this.#pointEditComponent.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    // ...трясем форму и разблокируем ее
+    this.#pointEditComponent.shake(resetFormState);
   };
 
   // Открываем форму редактирования
@@ -132,7 +177,6 @@ export default class PointPresenter {
       isMajorUpdate ? UpdateType.MAJOR : UpdateType.MINOR,
       updatedPoint,
     );
-    this.#replaceFormToPoint();
   };
 
   // Обработчик для удаления точки маршрута

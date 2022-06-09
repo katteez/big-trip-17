@@ -1,4 +1,5 @@
 import { RenderPosition, render, remove } from '../framework/render.js';
+import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
 import PointsApiService from '../points-api-service.js';
 import OffersModel from '../model/offers-model.js';
 import DestinationsModel from '../model/destinations-model.js';
@@ -16,6 +17,11 @@ import PointPresenter from './point-presenter.js';
 import PointNewPresenter from './point-new-presenter.js';
 import { filter } from '../utils/filter.js';
 import { sortDayUp, sortEventTypeUp, sortTimeDown, sortPriceDown } from '../utils/sort.js';
+
+const UiBlockerTimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
+};
 
 export default class PagePresenter {
   #tripContainer = null;
@@ -37,6 +43,7 @@ export default class PagePresenter {
   #currentSortType = SortType.DAY;
   #pointPresenterMap = new Map();
   #pointNewPresenter = null;
+  #uiBlocker = new UiBlocker(UiBlockerTimeLimit.LOWER_LIMIT, UiBlockerTimeLimit.UPPER_LIMIT);
 
   #loadingComponent = new LoadingView();
   #newPointButtonComponent = null;
@@ -89,7 +96,7 @@ export default class PagePresenter {
       const filterPresenter = new FilterPresenter(this.#filterContainer, this.#filterModel, this.#pointsModel);
       filterPresenter.init();
 
-      this.#renderPage();
+      this.#renderPage({rerenderNewPointButton: true});
     });
   };
 
@@ -165,18 +172,43 @@ export default class PagePresenter {
   };
 
   // Обновляем модель в зависимости от действий пользователя
-  #handleViewAction = (actionType, updateType, updatedPoint) => {
+  #handleViewAction = async (actionType, updateType, updatedPoint) => {
+    this.#uiBlocker.block();
+
     switch (actionType) {
       case UserAction.UPDATE_POINT:
-        this.#pointsModel.updatePoint(updateType, updatedPoint);
+        this.#pointPresenterMap.get(updatedPoint.id).setSaving();
+
+        try {
+          await this.#pointsModel.updatePoint(updateType, updatedPoint);
+        } catch(err) {
+          this.#pointPresenterMap.get(updatedPoint.id).setAborting();
+          throw err;
+        }
         break;
       case UserAction.ADD_POINT:
-        this.#pointsModel.addPoint(updateType, updatedPoint);
+        this.#pointNewPresenter.setSaving();
+
+        try {
+          await this.#pointsModel.addPoint(updateType, updatedPoint);
+        } catch(err) {
+          this.#pointNewPresenter.setAborting();
+          throw err;
+        }
         break;
       case UserAction.DELETE_POINT:
-        this.#pointsModel.deletePoint(updateType, updatedPoint);
+        this.#pointPresenterMap.get(updatedPoint.id).setDeleting();
+
+        try {
+          await this.#pointsModel.deletePoint(updateType, updatedPoint);
+        } catch(err) {
+          this.#pointPresenterMap.get(updatedPoint.id).setAborting();
+          throw err;
+        }
         break;
     }
+
+    this.#uiBlocker.unblock();
   };
 
   // Обработчик-наблюдатель, который реагирует на изменения модели точек маршрута
@@ -192,14 +224,14 @@ export default class PagePresenter {
         this.#renderPoints();
         break;
       case UpdateType.MAJOR:
-        this.#clearPage(resetSortType);
+        this.#clearPage({resetSortType});
         this.#renderPage();
         break;
       case UpdateType.INIT:
         this.#isLoading = false;
         remove(this.#loadingComponent);
-        this.#clearPage();
-        this.#renderPage();
+        this.#clearPage({rerenderNewPointButton: true});
+        this.#renderPage({rerenderNewPointButton: true});
         break;
     }
   };
@@ -230,11 +262,14 @@ export default class PagePresenter {
     this.#pointPresenterMap.clear();
   };
 
-  #clearPage = (resetSortType) => {
+  #clearPage = ({rerenderNewPointButton = false, resetSortType = false} = {}) => {
     this.#pointNewPresenter.destroy();
     this.#clearPointList();
 
-    remove(this.#newPointButtonComponent);
+    if (rerenderNewPointButton) {
+      remove(this.#newPointButtonComponent);
+    }
+
     remove(this.#loadingComponent);
 
     if (this.#tripComponent) {
@@ -254,8 +289,10 @@ export default class PagePresenter {
     }
   };
 
-  #renderPage = () => {
-    this.#renderNewPointButton();
+  #renderPage = ({rerenderNewPointButton = false} = {}) => {
+    if (rerenderNewPointButton) {
+      this.#renderNewPointButton();
+    }
 
     if (this.#isLoading) {
       this.#renderLoading();

@@ -15,6 +15,7 @@ export default class OffersModel {
       this.#offers = await this.#pointsApiService.offers;
     } catch(err) {
       this.#offers = [];
+      throw new Error(`Can't get offers: ${err.message}`);
     }
   };
 }
