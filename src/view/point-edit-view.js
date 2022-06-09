@@ -145,6 +145,7 @@ const createPointEditTemplate = (offersByAllTypes, offersByType, allDestinations
   const endTime = humanizePointDateTime(dateTo);
   const selectedOfferIds = data.offers;
   const isSubmitDisabled = !basePrice || !startTime || !endTime || !type || !destinationName;
+  const resetButtonTitle = id ? 'Delete' : 'Cancel';
 
   const eventTypesTemplate = createPointEditViewEventTypeListTemplate(offersByAllTypes, type);
   const destinationsTemplate = createPointEditViewDestinationListTemplate(allDestinations);
@@ -220,7 +221,7 @@ const createPointEditTemplate = (offersByAllTypes, offersByType, allDestinations
         <button class="event__reset-btn" type="reset"
           ${isDisabled ? 'disabled' : ''}
         >
-          ${isDeleting ? 'Deleting...' : 'Delete'}
+          ${isDeleting ? 'Deleting...' : resetButtonTitle}
         </button>
 
         ${rollupButtonTemplate}
