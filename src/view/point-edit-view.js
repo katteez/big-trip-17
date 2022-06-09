@@ -392,8 +392,7 @@ export default class PointEditView extends AbstractStatefulView {
   // Изменение доп. опций
   #offerClickHandler = (evt) => {
     const toAdd = evt.target.checked;
-    const idStringArray = evt.target.id.split('event-offer-');
-    const newOfferId = +idStringArray[idStringArray.length-1];
+    const newOfferId = +evt.target.id.replace('event-offer-', '');
 
     const oldOfferIds = [...this._state.offers];
     let newOfferIds;
