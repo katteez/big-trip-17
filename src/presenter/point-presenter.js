@@ -67,6 +67,10 @@ export default class PointPresenter {
   destroy = () => {
     remove(this.#pointComponent);
     remove(this.#pointEditComponent);
+    this.#pointComponent = null;
+    this.#pointEditComponent = null;
+
+    document.removeEventListener('keydown', this.#escKeyDownHandler);
   };
 
   // Для закрытия всех форм редактирования из PagePresenter

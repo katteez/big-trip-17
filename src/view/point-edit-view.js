@@ -403,6 +403,7 @@ export default class PointEditView extends AbstractStatefulView {
       newOfferIds = oldOfferIds.filter((offerId) => offerId !== newOfferId);
     }
 
+    // В процессе редактирования сохраняем в state все выбранные пользователем опции по всем типам событий
     this._state.tempSelectedOfferIdsByAllTypes.find((offersByOneType) => offersByOneType.type === this._state.type)
       .offers = newOfferIds;
 
