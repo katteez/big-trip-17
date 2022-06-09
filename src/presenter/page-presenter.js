@@ -231,7 +231,7 @@ export default class PagePresenter {
         this.#isLoading = false;
         remove(this.#loadingComponent);
         this.#clearPage({rerenderNewPointButton: true});
-        this.#renderPage({rerenderNewPointButton: true});
+        this.#renderPage({rerenderNewPointButton: true, rerenderPointList: true});
         break;
     }
   };
@@ -289,7 +289,7 @@ export default class PagePresenter {
     }
   };
 
-  #renderPage = ({rerenderNewPointButton = false} = {}) => {
+  #renderPage = ({rerenderNewPointButton = false, rerenderPointList = false} = {}) => {
     if (rerenderNewPointButton) {
       this.#renderNewPointButton();
     }
@@ -305,7 +305,11 @@ export default class PagePresenter {
     }
 
     this.#renderTrip();
-    this.#renderPointList();
+
+    if (rerenderPointList) {
+      this.#renderPointList();
+    }
+
     this.#renderSort();
     this.#renderPoints();
   };
