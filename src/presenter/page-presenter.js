@@ -183,7 +183,6 @@ export default class PagePresenter {
           await this.#pointsModel.updatePoint(updateType, updatedPoint);
         } catch(err) {
           this.#pointPresenterMap.get(updatedPoint.id).setAborting();
-          throw err;
         }
         break;
       case UserAction.ADD_POINT:
@@ -193,7 +192,6 @@ export default class PagePresenter {
           await this.#pointsModel.addPoint(updateType, updatedPoint);
         } catch(err) {
           this.#pointNewPresenter.setAborting();
-          throw err;
         }
         break;
       case UserAction.DELETE_POINT:
@@ -203,7 +201,6 @@ export default class PagePresenter {
           await this.#pointsModel.deletePoint(updateType, updatedPoint);
         } catch(err) {
           this.#pointPresenterMap.get(updatedPoint.id).setAborting();
-          throw err;
         }
         break;
     }
