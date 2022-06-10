@@ -128,11 +128,17 @@ export default class PointPresenter {
     this.#mode = Mode.DEFAULT;
   };
 
+  // Обработчик для закрытия формы редактирования без сохранения по Escape
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();
       this.resetView();
     }
+  };
+
+  // Обработчик для закрытия формы редактирования без сохранения
+  #handleRollupButtonClick = () => {
+    this.resetView();
   };
 
   // Обработчик для открытия формы редактирования
@@ -153,11 +159,6 @@ export default class PointPresenter {
       UpdateType.PATCH,
       {...this.#point, isFavorite: !this.#point.isFavorite},
     );
-  };
-
-  // Обработчик для закрытия формы редактирования без сохранения
-  #handleRollupButtonClick = () => {
-    this.resetView();
   };
 
   // Обработчик для отправки отредактированных данных

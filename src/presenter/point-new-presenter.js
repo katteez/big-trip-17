@@ -82,6 +82,7 @@ export default class PointNewPresenter {
     this.destroy();
   };
 
+  // Обработчик для закрытия формы без сохранения по Escape
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();

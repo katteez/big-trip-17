@@ -49,12 +49,11 @@ const createPointEditViewRollupButtonTemplate = (id, isDisabled) => id ? (
 // Доп. опция
 const createPointEditViewOfferSelectorTemplate = (offer, selectedOfferIds, isDisabled) => {
   const {id, title, price} = offer;
-  const checked = selectedOfferIds.includes(id) ? 'checked' : '';
 
   return (
     `<div class="event__offer-selector">
       <input class="event__offer-checkbox  visually-hidden" id="event-offer-${id}" type="checkbox" name="event-offer-${id}"
-        ${checked}
+        ${selectedOfferIds.includes(id) ? 'checked' : ''}
         ${isDisabled ? 'disabled' : ''}
       >
       <label class="event__offer-label" for="event-offer-${id}">
@@ -68,23 +67,19 @@ const createPointEditViewOfferSelectorTemplate = (offer, selectedOfferIds, isDis
 
 // Секция с доп. опциями
 const createPointEditViewOffersSectionTemplate = (offersByType, selectedOfferIds, isDisabled) => {
-  if (offersByType && offersByType.length) {
-    const offerSelectorsTemplate = offersByType
-      .map((offer) => createPointEditViewOfferSelectorTemplate(offer, selectedOfferIds, isDisabled))
-      .join('');
+  const offerSelectorsTemplate = offersByType
+    .map((offer) => createPointEditViewOfferSelectorTemplate(offer, selectedOfferIds, isDisabled))
+    .join('');
 
-    return (
-      `<section class="event__section  event__section--offers">
-        <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+  return (
+    `<section class="event__section  event__section--offers">
+      <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
-        <div class="event__available-offers">
-          ${offerSelectorsTemplate}
-        </div>
-      </section>`
-    );
-  }
-
-  return '';
+      <div class="event__available-offers">
+        ${offerSelectorsTemplate}
+      </div>
+    </section>`
+  );
 };
 
 // Фотография пункта назначения
@@ -94,36 +89,28 @@ const createPointEditViewEventPhotoTemplate = (photo) => (
 
 // Контейнер с фотографиями пункта назначения
 const createPointEditViewPhotosContainerTemplate = (photos) => {
-  if (photos && photos.length) {
-    const eventPhotosTemplate = photos.map((photo) => createPointEditViewEventPhotoTemplate(photo)).join('');
+  const eventPhotosTemplate = photos.map((photo) => createPointEditViewEventPhotoTemplate(photo)).join('');
 
-    return (
-      `<div class="event__photos-container">
-        <div class="event__photos-tape">
-          ${eventPhotosTemplate}
-        </div>
-      </div>`
-    );
-  }
-
-  return '';
+  return (
+    `<div class="event__photos-container">
+      <div class="event__photos-tape">
+        ${eventPhotosTemplate}
+      </div>
+    </div>`
+  );
 };
 
 // Секция с описанием пункта назначения
 const createPointEditViewDestinationSectionTemplate = (description, photos) => {
-  if (description) {
-    const photosContainerTemplate = createPointEditViewPhotosContainerTemplate(photos);
+  const photosContainerTemplate = photos?.length ? createPointEditViewPhotosContainerTemplate(photos) : '';
 
-    return (
-      `<section class="event__section  event__section--destination">
-        <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-        <p class="event__destination-description">${description}</p>
-        ${photosContainerTemplate}
-      </section>`
-    );
-  }
-
-  return '';
+  return (
+    `<section class="event__section  event__section--destination">
+      <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+      <p class="event__destination-description">${description}</p>
+      ${photosContainerTemplate}
+    </section>`
+  );
 };
 
 const createPointEditTemplate = (offersByAllTypes, offersByType, allDestinations, data) => {
@@ -150,8 +137,12 @@ const createPointEditTemplate = (offersByAllTypes, offersByType, allDestinations
   const eventTypesTemplate = createPointEditViewEventTypeListTemplate(offersByAllTypes, type);
   const destinationsTemplate = createPointEditViewDestinationListTemplate(allDestinations);
   const rollupButtonTemplate = createPointEditViewRollupButtonTemplate(id, isDisabled);
-  const offersSectionTemplate = createPointEditViewOffersSectionTemplate(offersByType, selectedOfferIds, isDisabled);
-  const destinationSectionTemplate = createPointEditViewDestinationSectionTemplate(destinationDescription, destinationPhotos);
+  const offersSectionTemplate = offersByType?.length ?
+    createPointEditViewOffersSectionTemplate(offersByType, selectedOfferIds, isDisabled) :
+    '';
+  const destinationSectionTemplate = destinationDescription ?
+    createPointEditViewDestinationSectionTemplate(destinationDescription, destinationPhotos) :
+    '';
 
   return (`<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
@@ -253,7 +244,7 @@ export default class PointEditView extends AbstractStatefulView {
     this.#offersByType = offersByType ? [...offersByType] : findOffersByType(offersByAllTypes, DEFAULT_TYPE);
     this.#point = {...point, destination: {...point.destination}, offers: [...point.offers]};
 
-    this._state = this.#convertPointToState(this.#point);
+    this._state = PointEditView.convertPointToState(this.#point, this.#offersByAllTypes);
 
     this.#setInnerHandlers();
     this.#setStartDatePicker();
@@ -263,6 +254,48 @@ export default class PointEditView extends AbstractStatefulView {
   get template() {
     return createPointEditTemplate(this.#offersByAllTypes, this.#offersByType, this.#allDestinations, this._state);
   }
+
+  removeElement = () => {
+    super.removeElement();
+
+    if (this.#startDatePicker) {
+      this.#startDatePicker.destroy();
+      this.#startDatePicker = null;
+    }
+
+    if (this.#endDatePicker) {
+      this.#endDatePicker.destroy();
+      this.#endDatePicker = null;
+    }
+  };
+
+  #setStartDatePicker = () => {
+    this.#startDatePicker = flatpickr(
+      this.element.querySelector('#event-start-time-1'),
+      {
+        enableTime: true,
+        'time_24hr': true,
+        dateFormat: 'd/m/Y H:i',
+        defaultDate: this._state.dateFrom,
+        maxDate: this._state.dateTo,
+        onClose: this.#dateFromChangeHandler,
+      },
+    );
+  };
+
+  #setEndDatePicker = () => {
+    this.#endDatePicker = flatpickr(
+      this.element.querySelector('#event-end-time-1'),
+      {
+        enableTime: true,
+        'time_24hr': true,
+        dateFormat: 'd/m/Y H:i',
+        defaultDate: this._state.dateTo,
+        minDate: this._state.dateFrom,
+        onClose: this.#dateToChangeHandler,
+      },
+    );
+  };
 
   setFormSubmitHandler = (callback) => {
     this._callback.formSubmit = callback;
@@ -287,20 +320,6 @@ export default class PointEditView extends AbstractStatefulView {
   #formDeleteClickHandler = (evt) => {
     evt.preventDefault();
     this._callback.deleteClick(PointEditView.convertStateToPoint(this._state));
-  };
-
-  removeElement = () => {
-    super.removeElement();
-
-    if (this.#startDatePicker) {
-      this.#startDatePicker.destroy();
-      this.#startDatePicker = null;
-    }
-
-    if (this.#endDatePicker) {
-      this.#endDatePicker.destroy();
-      this.#endDatePicker = null;
-    }
   };
 
   // Изменение типа
@@ -341,36 +360,8 @@ export default class PointEditView extends AbstractStatefulView {
     });
   };
 
-  #setStartDatePicker = () => {
-    this.#startDatePicker = flatpickr(
-      this.element.querySelector('#event-start-time-1'),
-      {
-        enableTime: true,
-        'time_24hr': true,
-        dateFormat: 'd/m/Y H:i',
-        defaultDate: this._state.dateFrom,
-        maxDate: this._state.dateTo,
-        onClose: this.#dateFromChangeHandler,
-      },
-    );
-  };
-
-  #setEndDatePicker = () => {
-    this.#endDatePicker = flatpickr(
-      this.element.querySelector('#event-end-time-1'),
-      {
-        enableTime: true,
-        'time_24hr': true,
-        dateFormat: 'd/m/Y H:i',
-        defaultDate: this._state.dateTo,
-        minDate: this._state.dateFrom,
-        onClose: this.#dateToChangeHandler,
-      },
-    );
-  };
-
   // Изменение цены
-  #priceInputHandler = (evt) => {
+  #priceChangeHandler = (evt) => {
     let newPrice = Math.round(evt.target.value);
 
     if (isNaN(newPrice)) {
@@ -384,13 +375,13 @@ export default class PointEditView extends AbstractStatefulView {
 
   // Изменение доп. опций
   #offerClickHandler = (evt) => {
-    const toAdd = evt.target.checked;
+    const isChecked = evt.target.checked;
     const newOfferId = +evt.target.id.replace('event-offer-', '');
 
     const oldOfferIds = [...this._state.offers];
     let newOfferIds;
 
-    if (toAdd) {
+    if (isChecked) {
       newOfferIds = [...oldOfferIds, newOfferId];
     } else {
       newOfferIds = oldOfferIds.filter((offerId) => offerId !== newOfferId);
@@ -411,9 +402,9 @@ export default class PointEditView extends AbstractStatefulView {
     this.element.querySelector('#event-destination-1')
       .addEventListener('change', this.#destinationChangeHandler);
     this.element.querySelector('#event-price-1')
-      .addEventListener('change', this.#priceInputHandler);
+      .addEventListener('change', this.#priceChangeHandler);
 
-    if (this.#offersByType && this.#offersByType.length) {
+    if (this.#offersByType?.length) {
       this.element.querySelector('.event__available-offers')
         .addEventListener('change', this.#offerClickHandler);
     }
@@ -428,11 +419,11 @@ export default class PointEditView extends AbstractStatefulView {
     this.setDeleteClickHandler(this._callback.deleteClick);
   };
 
-  #convertPointToState = (point) => ({...point,
+  static convertPointToState = (point, offersByAllTypes) => ({...point,
     destinationName: point.destination?.name  ? point.destination.name : '',
     destinationDescription: point.destination?.description ? point.destination.description : '',
     destinationPhotos: point.destination?.pictures ? [...point.destination.pictures] : [],
-    tempSelectedOfferIdsByAllTypes : this.#offersByAllTypes.map((offersByOneType) => (
+    tempSelectedOfferIdsByAllTypes : offersByAllTypes.map((offersByOneType) => (
       {...offersByOneType,
         offers: offersByOneType.type === point.type ? [...point.offers] : []}
     )),
