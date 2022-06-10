@@ -5,7 +5,7 @@ import { findOffersByType, calculateTotalCostForPoint } from '../utils/point.js'
 const createTripTemplate = (points, offersByAllTypes) => {
   const startDate = points[0].dateFrom;
   const endDate = points[points.length-1].dateTo;
-  const tripDate = humanizeTripDates(startDate, endDate);
+  const tripDates = humanizeTripDates(startDate, endDate);
 
   const tripDestinations = [];
   let totalCostForTrip = 0;
@@ -26,7 +26,7 @@ const createTripTemplate = (points, offersByAllTypes) => {
       <div class="trip-info__main">
         <h1 class="trip-info__title">${tripTitle}</h1>
 
-        <p class="trip-info__dates">${tripDate}</p>
+        <p class="trip-info__dates">${tripDates}</p>
       </div>
 
       <p class="trip-info__cost">

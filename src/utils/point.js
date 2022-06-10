@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import { getArraysDifference } from '../utils/common.js';
 
 const humanizePointDate = (date) => date ? dayjs(date).format('MMM DD') : '';
 const humanizePointDateForAttribute = (date) => date ? dayjs(date).format('YYYY-MM-DD') : '';
@@ -57,9 +58,6 @@ const humanizeDuration = (duration) => {
 };
 
 const isDatesEqual = (dateA, dateB) => (dateA === null && dateB === null) || dayjs(dateA).isSame(dateB, 'minute');
-
-const getArraysDifference = (arrayA, arrayB) => arrayA.filter((item) => !arrayB.includes(item))
-  .concat(arrayB.filter((item)=> !arrayA.includes(item)));
 
 const isOffersEqual = (offersA, offersB) => offersA.length === offersB.length &&
   !getArraysDifference(offersA, offersB).length;

@@ -39,7 +39,7 @@ const createPointTemplate = (offers, point) => {
 
   const duration = humanizeDuration(getDuration(dateTo, dateFrom));
 
-  const offersTemplate = selectedOfferIds && selectedOfferIds.length ? createPointViewOffersTemplate(selectedOfferIds, offers) : '';
+  const offersTemplate = selectedOfferIds?.length ? createPointViewOffersTemplate(selectedOfferIds, offers) : '';
 
   return (
     `<li class="trip-events__item">

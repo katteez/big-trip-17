@@ -39,9 +39,9 @@ export default class PagePresenter {
   #filterModel = new FilterModel();
 
   #isLoading = true;
-  #filterType = FilterType.EVERYTHING;
+  #currentFilterType = FilterType.EVERYTHING;
   #currentSortType = SortType.DAY.value;
-  #pointPresenterMap = new Map();
+  #pointPresentersByPointIds = new Map();
   #pointNewPresenter = null;
   #uiBlocker = new UiBlocker(UiBlockerTimeLimit.LOWER_LIMIT, UiBlockerTimeLimit.UPPER_LIMIT);
 
@@ -70,9 +70,9 @@ export default class PagePresenter {
   }
 
   get points() {
-    this.#filterType = this.#filterModel.filter;
+    this.#currentFilterType = this.#filterModel.filter;
     const points = this.#pointsModel.points;
-    const filteredPoints = filter[this.#filterType](points);
+    const filteredPoints = filter[this.#currentFilterType](points);
 
     switch (this.#currentSortType) {
       case SortType.DAY.value:
@@ -96,7 +96,7 @@ export default class PagePresenter {
       const filterPresenter = new FilterPresenter(this.#filterContainer, this.#filterModel, this.#pointsModel);
       filterPresenter.init();
 
-      this.#renderPage({rerenderNewPointButton: true});
+      this.#renderPage({isNecessaryToRerenderNewPointButton: true});
     });
   };
 
@@ -139,7 +139,7 @@ export default class PagePresenter {
 
   // 'Отсутствие точек маршрута'
   #renderNoPoints = () => {
-    this.#noPointComponent = new NoPointView(this.#filterType);
+    this.#noPointComponent = new NoPointView(this.#currentFilterType);
     render(this.#noPointComponent, this.#pointListContainer);
   };
 
@@ -177,12 +177,12 @@ export default class PagePresenter {
 
     switch (actionType) {
       case UserAction.UPDATE_POINT:
-        this.#pointPresenterMap.get(updatedPoint.id).setSaving();
+        this.#pointPresentersByPointIds.get(updatedPoint.id).setSaving();
 
         try {
           await this.#pointsModel.updatePoint(updateType, updatedPoint);
         } catch(err) {
-          this.#pointPresenterMap.get(updatedPoint.id).setAborting();
+          this.#pointPresentersByPointIds.get(updatedPoint.id).setAborting();
         }
         break;
       case UserAction.ADD_POINT:
@@ -195,12 +195,12 @@ export default class PagePresenter {
         }
         break;
       case UserAction.DELETE_POINT:
-        this.#pointPresenterMap.get(updatedPoint.id).setDeleting();
+        this.#pointPresentersByPointIds.get(updatedPoint.id).setDeleting();
 
         try {
           await this.#pointsModel.deletePoint(updateType, updatedPoint);
         } catch(err) {
-          this.#pointPresenterMap.get(updatedPoint.id).setAborting();
+          this.#pointPresentersByPointIds.get(updatedPoint.id).setAborting();
         }
         break;
     }
@@ -214,7 +214,7 @@ export default class PagePresenter {
 
     switch (updateType) {
       case UpdateType.PATCH:
-        this.#pointPresenterMap.get(data.id).init(data);
+        this.#pointPresentersByPointIds.get(data.id).init(data);
         break;
       case UpdateType.MAJOR:
         this.#clearPage({resetSortType});
@@ -223,8 +223,8 @@ export default class PagePresenter {
       case UpdateType.INIT:
         this.#isLoading = false;
         remove(this.#loadingComponent);
-        this.#clearPage({rerenderNewPointButton: true});
-        this.#renderPage({rerenderNewPointButton: true, rerenderPointList: true});
+        this.#clearPage({isNecessaryToRerenderNewPointButton: true});
+        this.#renderPage({isNecessaryToRerenderNewPointButton: true, isNecessaryToRerenderPointList: true});
         break;
     }
   };
@@ -232,7 +232,7 @@ export default class PagePresenter {
   // Закрываем все формы редактирования
   #handleModeChange = () => {
     this.#pointNewPresenter.destroy();
-    this.#pointPresenterMap.forEach((presenter) => presenter.resetView());
+    this.#pointPresentersByPointIds.forEach((presenter) => presenter.resetView());
   };
 
   // 'Точка маршрута'
@@ -241,7 +241,7 @@ export default class PagePresenter {
       offersByAllTypes, allDestinations, this.#handleViewAction, this.#handleModeChange);
     pointPresenter.init(point);
 
-    this.#pointPresenterMap.set(point.id, pointPresenter);
+    this.#pointPresentersByPointIds.set(point.id, pointPresenter);
   };
 
   #renderPoints = () => {
@@ -251,15 +251,15 @@ export default class PagePresenter {
   };
 
   #clearPointList = () => {
-    this.#pointPresenterMap.forEach((presenter) => presenter.destroy());
-    this.#pointPresenterMap.clear();
+    this.#pointPresentersByPointIds.forEach((presenter) => presenter.destroy());
+    this.#pointPresentersByPointIds.clear();
   };
 
-  #clearPage = ({rerenderNewPointButton = false, resetSortType = false} = {}) => {
+  #clearPage = ({isNecessaryToRerenderNewPointButton = false, resetSortType = false} = {}) => {
     this.#pointNewPresenter.destroy();
     this.#clearPointList();
 
-    if (rerenderNewPointButton) {
+    if (isNecessaryToRerenderNewPointButton) {
       remove(this.#newPointButtonComponent);
     }
 
@@ -282,8 +282,8 @@ export default class PagePresenter {
     }
   };
 
-  #renderPage = ({rerenderNewPointButton = false, rerenderPointList = false} = {}) => {
-    if (rerenderNewPointButton) {
+  #renderPage = ({isNecessaryToRerenderNewPointButton = false, isNecessaryToRerenderPointList = false} = {}) => {
+    if (isNecessaryToRerenderNewPointButton) {
       this.#renderNewPointButton();
     }
 
@@ -299,7 +299,7 @@ export default class PagePresenter {
 
     this.#renderTrip();
 
-    if (rerenderPointList) {
+    if (isNecessaryToRerenderPointList) {
       this.#renderPointList();
     }
 
