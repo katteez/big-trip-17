@@ -40,7 +40,7 @@ export default class PagePresenter {
 
   #isLoading = true;
   #filterType = FilterType.EVERYTHING;
-  #currentSortType = SortType.DAY;
+  #currentSortType = SortType.DAY.value;
   #pointPresenterMap = new Map();
   #pointNewPresenter = null;
   #uiBlocker = new UiBlocker(UiBlockerTimeLimit.LOWER_LIMIT, UiBlockerTimeLimit.UPPER_LIMIT);
@@ -75,13 +75,13 @@ export default class PagePresenter {
     const filteredPoints = filter[this.#filterType](points);
 
     switch (this.#currentSortType) {
-      case SortType.DAY:
+      case SortType.DAY.value:
         return filteredPoints.sort(sortDayUp);
-      case SortType.EVENT:
+      case SortType.EVENT.value:
         return filteredPoints.sort(sortEventTypeUp);
-      case SortType.TIME:
+      case SortType.TIME.value:
         return filteredPoints.sort(sortTimeDown);
-      case SortType.PRICE:
+      case SortType.PRICE.value:
         return filteredPoints.sort(sortPriceDown);
     }
 
@@ -111,7 +111,7 @@ export default class PagePresenter {
   };
 
   #createPoint = (callback) => {
-    this.#currentSortType = SortType.DAY;
+    this.#currentSortType = SortType.DAY.value;
     this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
     this.#pointNewPresenter.init(callback);
   };
@@ -183,7 +183,6 @@ export default class PagePresenter {
           await this.#pointsModel.updatePoint(updateType, updatedPoint);
         } catch(err) {
           this.#pointPresenterMap.get(updatedPoint.id).setAborting();
-          throw err;
         }
         break;
       case UserAction.ADD_POINT:
@@ -193,7 +192,6 @@ export default class PagePresenter {
           await this.#pointsModel.addPoint(updateType, updatedPoint);
         } catch(err) {
           this.#pointNewPresenter.setAborting();
-          throw err;
         }
         break;
       case UserAction.DELETE_POINT:
@@ -203,7 +201,6 @@ export default class PagePresenter {
           await this.#pointsModel.deletePoint(updateType, updatedPoint);
         } catch(err) {
           this.#pointPresenterMap.get(updatedPoint.id).setAborting();
-          throw err;
         }
         break;
     }
@@ -219,10 +216,6 @@ export default class PagePresenter {
       case UpdateType.PATCH:
         this.#pointPresenterMap.get(data.id).init(data);
         break;
-      case UpdateType.MINOR:
-        this.#clearPointList();
-        this.#renderPoints();
-        break;
       case UpdateType.MAJOR:
         this.#clearPage({resetSortType});
         this.#renderPage();
@@ -231,7 +224,7 @@ export default class PagePresenter {
         this.#isLoading = false;
         remove(this.#loadingComponent);
         this.#clearPage({rerenderNewPointButton: true});
-        this.#renderPage({rerenderNewPointButton: true});
+        this.#renderPage({rerenderNewPointButton: true, rerenderPointList: true});
         break;
     }
   };
@@ -285,11 +278,11 @@ export default class PagePresenter {
     }
 
     if (resetSortType) {
-      this.#currentSortType = SortType.DAY;
+      this.#currentSortType = SortType.DAY.value;
     }
   };
 
-  #renderPage = ({rerenderNewPointButton = false} = {}) => {
+  #renderPage = ({rerenderNewPointButton = false, rerenderPointList = false} = {}) => {
     if (rerenderNewPointButton) {
       this.#renderNewPointButton();
     }
@@ -305,7 +298,11 @@ export default class PagePresenter {
     }
 
     this.#renderTrip();
-    this.#renderPointList();
+
+    if (rerenderPointList) {
+      this.#renderPointList();
+    }
+
     this.#renderSort();
     this.#renderPoints();
   };

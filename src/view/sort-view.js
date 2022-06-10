@@ -1,16 +1,17 @@
 import AbstractView from '../framework/view/abstract-view.js';
 
 const createSortItemTemplate = (sortType, currentSortType) => (
-  `<div class="trip-sort__item  trip-sort__item--${sortType}">
+  `<div class="trip-sort__item  trip-sort__item--${sortType.value}">
     <input
-      id="sort-${sortType}"
+      id="sort-${sortType.value}"
       class="trip-sort__input  visually-hidden"
       type="radio" name="trip-sort"
-      value="sort-${sortType}"
-      data-sort-type="${sortType}"
-      ${sortType === currentSortType ? 'checked' : ''}
+      value="sort-${sortType.value}"
+      data-sort-type="${sortType.value}"
+      ${sortType.value === currentSortType ? 'checked' : ''}
+      ${sortType.isDisabled ? 'disabled' : ''}
     >
-    <label class="trip-sort__btn" for="sort-${sortType}">${sortType}</label>
+    <label class="trip-sort__btn" for="sort-${sortType.value}">${sortType.name}</label>
   </div>`
 );
 
