@@ -287,6 +287,10 @@ export default class PagePresenter {
       this.#renderNewPointButton();
     }
 
+    if (isNecessaryToRerenderPointList) {
+      this.#renderPointList();
+    }
+
     if (this.#isLoading) {
       this.#renderLoading();
       return;
@@ -298,10 +302,6 @@ export default class PagePresenter {
     }
 
     this.#renderTrip();
-
-    if (isNecessaryToRerenderPointList) {
-      this.#renderPointList();
-    }
 
     this.#renderSort();
     this.#renderPoints();
