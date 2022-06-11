@@ -1,6 +1,7 @@
 import { render, remove, RenderPosition } from '../framework/render.js';
 import PointEditView from '../view/point-edit-view.js';
 import { UserAction, UpdateType } from '../const.js';
+import { isEscKeyDown } from '../utils/common.js';
 
 export default class PointNewPresenter {
   #allDestinations = null;
@@ -84,7 +85,7 @@ export default class PointNewPresenter {
 
   // Обработчик для закрытия формы без сохранения по Escape
   #escKeyDownHandler = (evt) => {
-    if (evt.key === 'Escape' || evt.key === 'Esc') {
+    if (isEscKeyDown(evt)) {
       evt.preventDefault();
       this.destroy();
     }

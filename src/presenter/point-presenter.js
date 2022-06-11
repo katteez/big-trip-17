@@ -2,6 +2,7 @@ import { render, replace, remove } from '../framework/render.js';
 import PointView from '../view/point-view.js';
 import PointEditView from '../view/point-edit-view.js';
 import { isDatesEqual, isOffersEqual, findOffersByType } from '../utils/point.js';
+import { isEscKeyDown } from '../utils/common.js';
 import { UserAction, UpdateType } from '../const.js';
 
 const Mode = {
@@ -130,7 +131,7 @@ export default class PointPresenter {
 
   // Обработчик для закрытия формы редактирования без сохранения по Escape
   #escKeyDownHandler = (evt) => {
-    if (evt.key === 'Escape' || evt.key === 'Esc') {
+    if (isEscKeyDown(evt)) {
       evt.preventDefault();
       this.resetView();
     }
